@@ -5,323 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VF PLAY</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Video.js (engine principal — igual IPTV Smarters) -->
+    <link href="https://cdn.jsdelivr.net/npm/video.js@7.21.5/dist/video-js.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/video.js@7.21.5/dist/video.min.js"></script>
+    <!-- videojs-contrib-hls já está embutido no Video.js 7 via VHS -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.7.11/dist/shaka-player.compiled.js"></script>
 
     <style>
         :root {
-            --bg-deep:   #080c14;
-            --bg-panel:  #0d1321;
-            --bg-card:   #111827;
-            --bg-hover:  #1a2540;
-            --accent:    #00c3ff;
-            --accent2:   #0075ff;
-            --border:    rgba(0,195,255,0.15);
-            --text:      #e8f0fe;
-            --text-dim:  #7b8fb5;
-            --red:       #ef4444;
-            --green:     #22c55e;
-            --orange:    #f59e0b;
+            --bg-deep:#080c14; --bg-panel:#0d1321; --bg-card:#111827;
+            --bg-hover:#1a2540; --accent:#00c3ff; --accent2:#0075ff;
+            --border:rgba(0,195,255,0.15); --text:#e8f0fe; --text-dim:#7b8fb5;
+            --red:#ef4444; --green:#22c55e; --orange:#f59e0b;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Exo 2',sans-serif; background:var(--bg-deep); color:var(--text); height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Exo 2',sans-serif;background:var(--bg-deep);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
         /* ===== TELA VENDA ===== */
-        #salesScreen { display:flex; flex-direction:column; height:100vh; overflow-y:auto; background:var(--bg-deep); position:relative; }
-        #salesScreen::before { content:''; position:fixed; inset:0; z-index:0; background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,195,255,0.08) 0%,transparent 70%),radial-gradient(ellipse 60% 80% at 80% 100%,rgba(0,117,255,0.06) 0%,transparent 60%); pointer-events:none; }
-        .sale-header { position:relative; z-index:10; background:rgba(8,12,20,0.95); border-bottom:1px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:center; }
-        .sale-logo { font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,#00c3ff,#0075ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .adm-gear { position:absolute; right:18px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:0.2; font-size:20px; transition:opacity .2s; }
-        .adm-gear:hover { opacity:0.6; }
-        .sale-hero { position:relative; z-index:2; text-align:center; padding:36px 20px 20px; }
-        .sale-hero h1 { font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,40px); font-weight:700; letter-spacing:2px; background:linear-gradient(135deg,#fff 0%,#00c3ff 60%,#0075ff 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .sale-hero p { color:var(--text-dim); font-size:13px; margin-top:8px; letter-spacing:1px; }
-        .sale-body { position:relative; z-index:2; max-width:480px; width:90%; margin:0 auto; padding-bottom:50px; }
-        .login-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:20px; }
-        .login-label { font-size:10px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; margin-bottom:14px; display:block; }
-        .input-code { width:100%; padding:13px 16px; background:var(--bg-deep); color:#fff; border:1px solid rgba(0,195,255,0.2); border-radius:10px; font-size:15px; font-family:'Exo 2',sans-serif; text-align:center; letter-spacing:2px; margin-bottom:12px; transition:border-color .2s; }
-        .input-code:focus { outline:none; border-color:var(--accent); }
-        .btn-enter { width:100%; padding:14px; background:linear-gradient(90deg,var(--accent2),var(--accent)); color:#fff; border:none; border-radius:10px; font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:opacity .2s,transform .1s; }
-        .btn-enter:hover { opacity:.88; transform:translateY(-1px); }
-        .divider { display:flex; align-items:center; gap:12px; color:var(--text-dim); font-size:11px; letter-spacing:2px; margin:6px 0 16px; }
-        .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-        .plan-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
-        .btn-plan { background:var(--bg-card); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:16px 12px; cursor:pointer; text-align:center; transition:all .2s; font-family:'Exo 2',sans-serif; }
-        .btn-plan:hover { border-color:var(--accent); background:var(--bg-hover); transform:translateY(-2px); }
-        .btn-plan .plan-name { display:block; font-weight:700; font-size:13px; letter-spacing:1px; }
-        .btn-plan .plan-price { display:block; font-size:11px; color:var(--accent); margin-top:4px; font-weight:600; }
-        .btn-plan-anual { width:100%; background:linear-gradient(135deg,#0d1a2e,#0f2040); border:1px solid rgba(0,195,255,0.35); color:var(--text); border-radius:12px; padding:18px; cursor:pointer; font-family:'Exo 2',sans-serif; transition:transform .2s,box-shadow .2s; position:relative; overflow:hidden; margin-bottom:10px; }
-        .btn-plan-anual::after { content:'MELHOR OFERTA'; position:absolute; top:10px; right:-28px; background:var(--accent); color:#000; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 36px; transform:rotate(35deg); }
-        .btn-plan-anual:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,195,255,0.15); }
-        .btn-plan-anual .plan-name { font-size:15px; font-weight:700; letter-spacing:2px; display:block; }
-        .btn-plan-anual .plan-price { color:var(--accent); font-size:13px; font-weight:700; display:block; margin-top:4px; }
-        .btn-teste { width:100%; padding:12px; background:transparent; color:var(--text-dim); border:1px solid rgba(255,255,255,0.08); border-radius:10px; cursor:pointer; font-size:12px; letter-spacing:1px; font-family:'Exo 2',sans-serif; transition:border-color .2s,color .2s; }
-        .btn-teste:hover { border-color:rgba(0,195,255,0.3); color:var(--accent); }
+        #salesScreen{display:flex;flex-direction:column;height:100vh;overflow-y:auto;background:var(--bg-deep);position:relative}
+        #salesScreen::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,195,255,0.08) 0%,transparent 70%),radial-gradient(ellipse 60% 80% at 80% 100%,rgba(0,117,255,0.06) 0%,transparent 60%);pointer-events:none}
+        .sale-header{position:relative;z-index:10;background:rgba(8,12,20,0.95);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:center}
+        .sale-logo{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;letter-spacing:4px;background:linear-gradient(90deg,#00c3ff,#0075ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .adm-gear{position:absolute;right:18px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.2;font-size:20px;transition:opacity .2s}
+        .adm-gear:hover{opacity:0.6}
+        .sale-hero{position:relative;z-index:2;text-align:center;padding:36px 20px 20px}
+        .sale-hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(22px,5vw,40px);font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,#fff 0%,#00c3ff 60%,#0075ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .sale-hero p{color:var(--text-dim);font-size:13px;margin-top:8px;letter-spacing:1px}
+        .sale-body{position:relative;z-index:2;max-width:480px;width:90%;margin:0 auto;padding-bottom:50px}
+        .login-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+        .login-label{font-size:10px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:14px;display:block}
+        .input-code{width:100%;padding:13px 16px;background:var(--bg-deep);color:#fff;border:1px solid rgba(0,195,255,0.2);border-radius:10px;font-size:15px;font-family:'Exo 2',sans-serif;text-align:center;letter-spacing:2px;margin-bottom:12px;transition:border-color .2s}
+        .input-code:focus{outline:none;border-color:var(--accent)}
+        .btn-enter{width:100%;padding:14px;background:linear-gradient(90deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:opacity .2s,transform .1s}
+        .btn-enter:hover{opacity:.88;transform:translateY(-1px)}
+        .divider{display:flex;align-items:center;gap:12px;color:var(--text-dim);font-size:11px;letter-spacing:2px;margin:6px 0 16px}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+        .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+        .btn-plan{background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .2s;font-family:'Exo 2',sans-serif}
+        .btn-plan:hover{border-color:var(--accent);background:var(--bg-hover);transform:translateY(-2px)}
+        .btn-plan .plan-name{display:block;font-weight:700;font-size:13px;letter-spacing:1px}
+        .btn-plan .plan-price{display:block;font-size:11px;color:var(--accent);margin-top:4px;font-weight:600}
+        .btn-plan-anual{width:100%;background:linear-gradient(135deg,#0d1a2e,#0f2040);border:1px solid rgba(0,195,255,0.35);color:var(--text);border-radius:12px;padding:18px;cursor:pointer;font-family:'Exo 2',sans-serif;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;margin-bottom:10px}
+        .btn-plan-anual::after{content:'MELHOR OFERTA';position:absolute;top:10px;right:-28px;background:var(--accent);color:#000;font-size:9px;font-weight:800;letter-spacing:1px;padding:3px 36px;transform:rotate(35deg)}
+        .btn-plan-anual:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,195,255,0.15)}
+        .btn-plan-anual .plan-name{font-size:15px;font-weight:700;letter-spacing:2px;display:block}
+        .btn-plan-anual .plan-price{color:var(--accent);font-size:13px;font-weight:700;display:block;margin-top:4px}
+        .btn-teste{width:100%;padding:12px;background:transparent;color:var(--text-dim);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;font-size:12px;letter-spacing:1px;font-family:'Exo 2',sans-serif;transition:border-color .2s,color .2s}
+        .btn-teste:hover{border-color:rgba(0,195,255,0.3);color:var(--accent)}
 
         /* ===== MODAIS ===== */
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
-        .modal-box { background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:28px; width:90%; max-width:360px; text-align:center; }
-        .modal-box h2 { font-family:'Rajdhani',sans-serif; font-size:22px; letter-spacing:3px; color:var(--accent); margin-bottom:18px; }
-        .modal-box input { width:100%; padding:12px 14px; background:var(--bg-deep); color:#fff; border:1px solid var(--border); border-radius:8px; margin-bottom:10px; font-size:14px; font-family:'Exo 2',sans-serif; }
-        .modal-box input:focus { outline:none; border-color:var(--accent); }
-        .btn-modal-primary { width:100%; padding:13px; background:linear-gradient(90deg,var(--accent2),var(--accent)); color:#fff; border:none; border-radius:10px; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; cursor:pointer; margin-bottom:8px; }
-        .btn-modal-cancel { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; margin-top:6px; }
-        .pix-area { background:var(--bg-deep); padding:10px; border-radius:8px; border:1px dashed rgba(0,195,255,0.25); margin:10px 0; word-break:break-all; font-size:9px; color:var(--text-dim); max-height:60px; overflow-y:auto; text-align:left; }
-        .btn-copy { width:100%; padding:10px; background:var(--bg-hover); color:var(--text); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; margin-bottom:10px; letter-spacing:1px; }
-        #qrcodeCanvas { margin:12px auto; display:flex; justify-content:center; }
-        #qrcodeCanvas img { border:8px solid #fff; border-radius:4px; }
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:28px;width:90%;max-width:360px;text-align:center}
+        .modal-box h2{font-family:'Rajdhani',sans-serif;font-size:22px;letter-spacing:3px;color:var(--accent);margin-bottom:18px}
+        .modal-box input{width:100%;padding:12px 14px;background:var(--bg-deep);color:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;font-family:'Exo 2',sans-serif}
+        .modal-box input:focus{outline:none;border-color:var(--accent)}
+        .btn-modal-primary{width:100%;padding:13px;background:linear-gradient(90deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-bottom:8px}
+        .btn-modal-cancel{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;margin-top:6px}
+        .pix-area{background:var(--bg-deep);padding:10px;border-radius:8px;border:1px dashed rgba(0,195,255,0.25);margin:10px 0;word-break:break-all;font-size:9px;color:var(--text-dim);max-height:60px;overflow-y:auto;text-align:left}
+        .btn-copy{width:100%;padding:10px;background:var(--bg-hover);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;margin-bottom:10px;letter-spacing:1px}
+        #qrcodeCanvas{margin:12px auto;display:flex;justify-content:center}
+        #qrcodeCanvas img{border:8px solid #fff;border-radius:4px}
+
+        /* ===== VIDEO.JS TEMA VF PLAY ===== */
+        .video-js { background:#000; }
+        .video-js .vjs-big-play-button {
+            border-color: var(--accent);
+            background: rgba(0,117,255,0.35);
+            border-radius: 50%;
+            width: 64px; height: 64px;
+            line-height: 64px;
+            margin-left: -32px; margin-top: -32px;
+            transition: background .2s, transform .15s;
+        }
+        .video-js:hover .vjs-big-play-button { background: rgba(0,195,255,0.5); transform: scale(1.08); }
+        .video-js .vjs-control-bar {
+            background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+            height: 38px;
+        }
+        .video-js .vjs-play-progress { background: var(--accent); }
+        .video-js .vjs-volume-level  { background: var(--accent); }
+        .video-js .vjs-slider        { background: rgba(255,255,255,0.12); }
+        .video-js .vjs-load-progress { background: rgba(0,195,255,0.25); }
+        .video-js .vjs-seek-to-live-text { color: var(--red); font-weight:800; letter-spacing:1px; }
+        .video-js .vjs-live-display  { color: var(--red); font-weight:800; }
+        .vjs-default-skin .vjs-big-play-button .vjs-icon-placeholder:before { font-size: 28px; }
+
+        /* Garante que o video-wrapper se comporte corretamente com VJS */
+        .video-wrapper .video-js { width:100% !important; height:100% !important; }
 
         /* ===== APP ===== */
-        #mainApp { display:none; width:100%; height:100vh; flex-direction:row; }
+        #mainApp{display:none;width:100%;height:100vh;flex-direction:row}
 
         /* SIDEBAR */
-        .sidebar { width:240px; min-width:240px; background:var(--bg-panel); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-        .sidebar-logo { padding:16px; border-bottom:1px solid var(--border); text-align:center; }
-        .sidebar-logo-text { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,#00c3ff,#0075ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .sidebar-section { padding:12px 10px 8px; border-bottom:1px solid var(--border); }
-        .sidebar-section-title { font-size:9px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px; padding:0 4px; display:block; }
+        .sidebar{width:240px;min-width:240px;background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+        .sidebar-logo{padding:16px;border-bottom:1px solid var(--border);text-align:center}
+        .sidebar-logo-text{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;background:linear-gradient(90deg,#00c3ff,#0075ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .sidebar-section{padding:12px 10px 8px;border-bottom:1px solid var(--border)}
+        .sidebar-section-title{font-size:9px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;padding:0 4px;display:block}
 
-        /* BOTÕES DE LISTA */
-        .list-btn { width:100%; padding:10px 12px; background:transparent; color:var(--text-dim); border:1px solid transparent; border-radius:10px; cursor:pointer; text-align:left; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:600; display:flex; align-items:center; gap:9px; margin-bottom:5px; transition:all .2s; }
-        .list-btn:hover { background:var(--bg-hover); color:var(--accent); border-color:var(--border); }
-        .list-btn.active { background:linear-gradient(90deg,rgba(0,117,255,0.18),rgba(0,195,255,0.10)); border-color:rgba(0,195,255,0.35); color:var(--accent); }
-        .list-btn .list-dot { width:6px; height:6px; border-radius:50%; background:var(--text-dim); margin-left:auto; flex-shrink:0; transition:all .2s; }
-        .list-btn.active .list-dot { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+        /* BOTÕES LISTA */
+        .list-btn{width:100%;padding:10px 12px;background:transparent;color:var(--text-dim);border:1px solid transparent;border-radius:10px;cursor:pointer;text-align:left;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:5px;transition:all .2s}
+        .list-btn:hover{background:var(--bg-hover);color:var(--accent);border-color:var(--border)}
+        .list-btn.active{background:linear-gradient(90deg,rgba(0,117,255,0.18),rgba(0,195,255,0.10));border-color:rgba(0,195,255,0.35);color:var(--accent)}
+        .list-btn .list-dot{width:6px;height:6px;border-radius:50%;background:var(--text-dim);margin-left:auto;flex-shrink:0;transition:all .2s}
+        .list-btn.active .list-dot{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+        /* ABAS CONTEÚDO */
+        .content-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg-panel)}
+        .ctab{flex:1;padding:10px 4px;background:none;border:none;color:var(--text-dim);font-family:'Exo 2',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;text-align:center}
+        .ctab:hover{color:var(--text)}
+        .ctab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
         /* BUSCA */
-        .search-box { padding:10px; border-bottom:1px solid var(--border); }
-        .search-input { width:100%; padding:9px 12px; background:var(--bg-deep); color:var(--text); border:1px solid var(--border); border-radius:8px; font-size:12px; font-family:'Exo 2',sans-serif; }
-        .search-input:focus { outline:none; border-color:var(--accent); }
-        .search-input::placeholder { color:var(--text-dim); }
+        .search-box{padding:8px 10px;border-bottom:1px solid var(--border)}
+        .search-input{width:100%;padding:9px 12px;background:var(--bg-deep);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Exo 2',sans-serif}
+        .search-input:focus{outline:none;border-color:var(--accent)}
+        .search-input::placeholder{color:var(--text-dim)}
 
-        /* LISTA DE CANAIS */
-        .channel-list { flex:1; overflow-y:auto; padding:6px; }
-        .channel-list::-webkit-scrollbar { width:4px; }
-        .channel-list::-webkit-scrollbar-track { background:transparent; }
-        .channel-list::-webkit-scrollbar-thumb { background:rgba(0,195,255,0.2); border-radius:2px; }
+        /* LISTA CANAIS */
+        .channel-list{flex:1;overflow-y:auto;padding:6px}
+        .channel-list::-webkit-scrollbar{width:4px}
+        .channel-list::-webkit-scrollbar-track{background:transparent}
+        .channel-list::-webkit-scrollbar-thumb{background:rgba(0,195,255,0.2);border-radius:2px}
 
-        /* GRUPOS / CATEGORIAS */
-        .group-header { font-size:9px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; padding:10px 8px 4px; display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
-        .group-header::before { content:''; display:inline-block; width:3px; height:3px; border-right:2px solid var(--text-dim); border-bottom:2px solid var(--text-dim); transform:rotate(-45deg); transition:transform .2s; }
-        .group-header.collapsed::before { transform:rotate(45deg); }
-        .group-channels { overflow:hidden; transition:max-height .3s ease; max-height:9999px; }
-        .group-channels.collapsed { max-height:0; }
+        .group-header{font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;padding:10px 8px 4px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+        .group-header::before{content:'';display:inline-block;width:3px;height:3px;border-right:2px solid var(--text-dim);border-bottom:2px solid var(--text-dim);transform:rotate(-45deg);transition:transform .2s}
+        .group-header.collapsed::before{transform:rotate(45deg)}
+        .group-channels{overflow:hidden;transition:max-height .3s ease;max-height:9999px}
+        .group-channels.collapsed{max-height:0}
 
-        .channel-item { display:flex; align-items:center; gap:10px; padding:8px 8px; border-radius:8px; cursor:pointer; transition:background .15s; margin-bottom:2px; }
-        .channel-item:hover { background:var(--bg-hover); }
-        .channel-item.playing { background:linear-gradient(90deg,rgba(0,117,255,0.2),rgba(0,195,255,0.08)); border-left:2px solid var(--accent); }
-        .channel-logo { width:36px; height:36px; border-radius:6px; object-fit:contain; background:var(--bg-card); flex-shrink:0; }
-        .channel-logo-placeholder { width:36px; height:36px; border-radius:6px; background:var(--bg-hover); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-dim); }
-        .channel-info { flex:1; min-width:0; }
-        .channel-name { font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .channel-group { font-size:10px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .channel-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;transition:background .15s;margin-bottom:2px}
+        .channel-item:hover{background:var(--bg-hover)}
+        .channel-item.playing{background:linear-gradient(90deg,rgba(0,117,255,0.2),rgba(0,195,255,0.08));border-left:2px solid var(--accent)}
+        .channel-logo{width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--bg-card);flex-shrink:0}
+        .channel-logo-placeholder{width:36px;height:36px;border-radius:6px;background:var(--bg-hover);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-dim)}
+        .channel-info{flex:1;min-width:0}
+        .channel-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .channel-group{font-size:10px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-        /* FOOTER SIDEBAR */
-        .sidebar-footer { padding:12px 10px; border-top:1px solid var(--border); }
-        .btn-logout { width:100%; padding:10px; background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.25); border-radius:10px; cursor:pointer; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; transition:background .2s; }
-        .btn-logout:hover { background:rgba(239,68,68,0.2); }
+        /* SIDEBAR FOOTER */
+        .sidebar-footer{padding:12px 10px;border-top:1px solid var(--border)}
+        .btn-logout{width:100%;padding:10px;background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);border-radius:10px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;transition:background .2s}
+        .btn-logout:hover{background:rgba(239,68,68,0.2)}
 
-        /* ÁREA DO PLAYER */
-        .player-area { flex:1; display:flex; flex-direction:column; background:#000; overflow:hidden; min-width:0; }
+        /* PLAYER */
+        .player-area{flex:1;display:flex;flex-direction:column;background:#000;overflow:hidden;min-width:0;position:relative}
+        .player-topbar{background:rgba(0,0,0,0.85);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);min-height:52px;flex-shrink:0}
+        .now-playing-logo{width:34px;height:34px;border-radius:6px;object-fit:contain;background:var(--bg-card)}
+        .now-playing-info{flex:1;min-width:0}
+        .now-playing-name{font-size:14px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .now-playing-status{font-size:11px;color:var(--text-dim)}
+        .live-badge{background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:1px;animation:pulseBadge 2s infinite}
+        @keyframes pulseBadge{0%,100%{opacity:1}50%{opacity:0.6}}
 
-        /* TOPBAR DO PLAYER */
-        .player-topbar { background:rgba(0,0,0,0.8); padding:10px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); min-height:52px; flex-shrink:0; }
-        .now-playing-logo { width:34px; height:34px; border-radius:6px; object-fit:contain; background:var(--bg-card); }
-        .now-playing-info { flex:1; min-width:0; }
-        .now-playing-name { font-size:14px; font-weight:700; font-family:'Rajdhani',sans-serif; letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .now-playing-status { font-size:11px; color:var(--text-dim); }
-        .live-badge { background:var(--red); color:#fff; font-size:9px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:1px; animation:pulseBadge 2s infinite; }
-        @keyframes pulseBadge { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        .video-wrapper{flex:1;position:relative;background:#000;min-height:0;overflow:hidden}
+        .video-wrapper video{width:100%;height:100%;display:block;object-fit:contain}
 
-        /* VIDEO */
-        .video-wrapper { flex:1; position:relative; background:#000; display:flex; flex-direction:column; min-height:0; overflow:hidden; }
-        .video-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; z-index:10; pointer-events:none; }
-        .spinner { width:44px; height:44px; border:3px solid rgba(0,195,255,0.2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
-        @keyframes spin { to{transform:rotate(360deg)} }
-        .overlay-msg { color:var(--text-dim); font-size:13px; text-align:center; padding:0 20px; }
-        .overlay-msg b { color:var(--accent); }
+        .video-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:10;background:rgba(0,0,0,0.75)}
+        .video-overlay.hidden{display:none}
+        .spinner{width:44px;height:44px;border:3px solid rgba(0,195,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .overlay-msg{color:var(--text-dim);font-size:13px;text-align:center;padding:0 20px}
+        .overlay-msg b{color:var(--accent)}
+        .welcome-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px}
+        .welcome-screen h2{font-family:'Rajdhani',sans-serif;font-size:clamp(22px,4vw,38px);letter-spacing:4px;color:var(--text-dim)}
+        .welcome-screen p{color:var(--text-dim);font-size:13px}
 
-        /* WELCOME */
-        .welcome-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:16px; }
-        .welcome-screen h2 { font-family:'Rajdhani',sans-serif; font-size:clamp(22px,4vw,38px); letter-spacing:4px; color:var(--text-dim); }
-        .welcome-screen p { color:var(--text-dim); font-size:13px; }
-
-        /* ===== VIDEO.JS — IPTV SMARTERS IDENTICAL STYLE ===== */
-        #vfPlayer { width:100% !important; height:100% !important; }
-        .video-js {
-            background:#000;
-            width:100% !important;
-            height:100% !important;
-            font-family:'Exo 2',sans-serif;
-        }
-        .video-js .vjs-tech { object-fit:contain; width:100%; height:100%; }
-
-        /* ── CONTROL BAR ── */
-        .video-js .vjs-control-bar {
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
-            height: 40px;
-            padding: 0 6px;
-            display: flex !important;
-            align-items: center;
-            font-size: 13px;
-        }
-        /* Ícones */
-        .video-js .vjs-button > .vjs-icon-placeholder::before {
-            font-size: 1.7em;
-            line-height: 40px;
-            color: #e0e8ff;
-        }
-        .video-js .vjs-control:hover .vjs-icon-placeholder::before { color:#00c3ff; }
-
-        /* ── PROGRESS BAR (posição absoluta acima da barra — igual Smarters) ── */
-        .video-js .vjs-progress-control {
-            position: absolute;
-            top: -12px;
-            left: 0; right: 0;
-            width: 100%;
-            height: 12px;
-            display: flex;
-            align-items: flex-end;
-        }
-        .video-js .vjs-progress-holder {
-            margin: 0;
-            border-radius: 0;
-            height: 3px;
-            flex: 1;
-            transition: height .15s;
-        }
-        .video-js .vjs-progress-control:hover .vjs-progress-holder { height: 6px; }
-        .video-js .vjs-play-progress {
-            background: linear-gradient(90deg, #0075ff, #00c3ff);
-        }
-        .video-js .vjs-play-progress::before {
-            color: #00c3ff;
-            top: -5px;
-            font-size: 11px;
-        }
-        .video-js .vjs-load-progress { background: rgba(255,255,255,0.18); }
-        .video-js .vjs-slider { background: rgba(255,255,255,0.1); border-radius:0; }
-
-        /* ── VOLUME ── */
-        .video-js .vjs-volume-panel { width: 80px; }
-        .video-js .vjs-volume-panel.vjs-volume-panel-horizontal { width: 80px; }
-        .video-js .vjs-volume-bar { margin: 1.35em 0.45em; }
-        .video-js .vjs-volume-level { background: linear-gradient(90deg, #0075ff, #00c3ff); }
-        .video-js .vjs-volume-level::before { color:#00c3ff; }
-        .video-js .vjs-mute-control .vjs-icon-placeholder::before { color:#e0e8ff; }
-
-        /* ── TEMPO ── */
-        .video-js .vjs-time-control {
-            line-height: 40px;
-            font-size: 11px;
-            color: #7b8fb5;
-            padding: 0 3px;
-            min-width: auto;
-        }
-        .video-js .vjs-current-time { display: block; color: #e0e8ff; }
-        .video-js .vjs-duration { display: block; }
-        .video-js .vjs-time-divider { display: block; padding: 0; min-width: 10px; }
-        .video-js .vjs-remaining-time { display: block; }
-
-        /* ── LIVE ── */
-        .video-js .vjs-live-control { line-height: 40px; color: #e0e8ff; font-size: 11px; }
-        .video-js .vjs-seek-to-live-control { color: #e0e8ff; }
-        .video-js .vjs-seek-to-live-control .vjs-seek-to-live-text {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 1px 5px;
-            border-radius: 3px;
-        }
-        .video-js .vjs-seek-to-live-control.vjs-at-live-edge .vjs-seek-to-live-text {
-            color: #ef4444;
-        }
-
-        /* ── SPACER ── */
-        .video-js .vjs-custom-control-spacer { flex: 1; }
-
-        /* ── PLAYBACK RATE ── */
-        .video-js .vjs-playback-rate .vjs-playback-rate-value {
-            font-size: 11px;
-            line-height: 40px;
-            color: #e0e8ff;
-        }
-        .video-js .vjs-menu-content { background: rgba(10,15,25,0.97); border:1px solid rgba(0,195,255,0.2); border-radius:8px; }
-        .video-js .vjs-menu-item { font-size:12px; color:#7b8fb5; }
-        .video-js .vjs-menu-item:hover, .video-js .vjs-menu-item.vjs-selected { color:#00c3ff; background:rgba(0,195,255,0.08); }
-
-        /* ── BIG PLAY BUTTON ── */
-        .video-js .vjs-big-play-button {
-            background: rgba(0,117,255,0.2) !important;
-            border: 2px solid rgba(0,195,255,0.55) !important;
-            border-radius: 50% !important;
-            width: 72px !important;
-            height: 72px !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            margin: 0 !important;
-            transition: background .2s, transform .1s;
-            backdrop-filter: blur(4px);
-        }
-        .video-js:hover .vjs-big-play-button,
-        .video-js .vjs-big-play-button:focus {
-            background: rgba(0,195,255,0.3) !important;
-            transform: translate(-50%, -50%) scale(1.08) !important;
-        }
-        .video-js .vjs-big-play-button .vjs-icon-placeholder::before {
-            font-size: 2.4em;
-            line-height: 68px;
-            color: #fff;
-        }
-
-        /* ── LOADING SPINNER ── */
-        .video-js .vjs-loading-spinner {
-            border-color: rgba(0,195,255,0.15);
-            width: 54px; height: 54px;
-        }
-        .video-js .vjs-loading-spinner::before,
-        .video-js .vjs-loading-spinner::after { border-top-color: #00c3ff; }
-
-        /* ── ERROR MODAL ── */
-        .video-js .vjs-modal-dialog { background: rgba(8,12,20,0.95); }
-        .video-js .vjs-modal-dialog-content { color: #7b8fb5; font-size:13px; }
-
-        /* ── POSTER ── */
-        .vjs-poster { background-color: #000; }
+        .loading-channels{display:flex;align-items:center;justify-content:center;padding:30px;gap:10px;flex-direction:column}
+        .loading-channels .spinner{width:28px;height:28px;border-width:2px}
+        .loading-channels span{font-size:11px;color:var(--text-dim)}
 
         /* ADM */
-        #admPanel { display:none; padding:20px; background:var(--bg-deep); flex-direction:column; overflow-y:auto; z-index:100; height:100vh; width:100%; position:fixed; top:0; left:0; }
-        .table-container { overflow-x:auto; width:100%; }
-        table { width:100%; border-collapse:collapse; background:var(--bg-card); margin-top:15px; color:white; min-width:1100px; }
-        th,td { padding:12px; text-align:left; border-bottom:1px solid var(--border); font-size:11px; }
-        th { background:var(--bg-panel); font-family:'Rajdhani'; letter-spacing:1px; font-size:12px; }
-        .btn-adm { padding:6px 10px; border-radius:4px; border:none; font-weight:bold; cursor:pointer; margin-right:3px; color:white; font-size:10px; }
+        #admPanel{display:none;padding:20px;background:var(--bg-deep);flex-direction:column;overflow-y:auto;z-index:100;height:100vh;width:100%;position:fixed;top:0;left:0}
+        .table-container{overflow-x:auto;width:100%}
+        table{width:100%;border-collapse:collapse;background:var(--bg-card);margin-top:15px;color:white;min-width:1100px}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid var(--border);font-size:11px}
+        th{background:var(--bg-panel);font-family:'Rajdhani';letter-spacing:1px;font-size:12px}
+        .btn-adm{padding:6px 10px;border-radius:4px;border:none;font-weight:bold;cursor:pointer;margin-right:3px;color:white;font-size:10px}
 
-        /* LOADING LISTA */
-        .loading-channels { display:flex; align-items:center; justify-content:center; padding:30px; gap:10px; flex-direction:column; }
-        .loading-channels .spinner { width:28px; height:28px; border-width:2px; }
-        .loading-channels span { font-size:11px; color:var(--text-dim); }
-
-        /* MOBILE */
-        @media(max-width:600px) {
-            .sidebar { width:54px; min-width:54px; }
-            .sidebar-section-title,.list-btn span:not(.list-dot),.channel-name,.channel-group,.channel-info,.search-box,.group-header { display:none; }
-            .channel-item { justify-content:center; padding:8px 4px; }
-            .sidebar-logo-text { font-size:11px; letter-spacing:1px; }
-            .btn-logout { font-size:0; justify-content:center; }
-            .btn-logout::before { content:'⏻'; font-size:16px; }
+        @media(max-width:600px){
+            .sidebar{width:54px;min-width:54px}
+            .sidebar-section-title,.list-btn span:not(.list-dot),.channel-name,.channel-group,.channel-info,.search-box,.group-header{display:none}
+            .channel-item{justify-content:center;padding:8px 4px}
+            .sidebar-logo-text{font-size:11px;letter-spacing:1px}
+            .btn-logout{font-size:0;justify-content:center}
+            .btn-logout::before{content:'⏻';font-size:16px}
+            .ctab{font-size:9px;padding:10px 2px}
         }
     </style>
 </head>
 <body onload="verificarLoginSalvo()">
 
+<!-- TELA VENDA -->
 <div id="salesScreen">
     <div class="sale-header">
         <div class="sale-logo">VF PLAY</div>
@@ -352,6 +233,7 @@
     </div>
 </div>
 
+<!-- MODAL CADASTRO -->
 <div id="modalCadastro" class="modal-overlay">
     <div class="modal-box">
         <h2>CADASTRO</h2>
@@ -362,19 +244,21 @@
     </div>
 </div>
 
+<!-- MODAL PIX -->
 <div id="modalPix" class="modal-overlay">
     <div class="modal-box">
         <h2>PAGAR COM PIX</h2>
         <div id="qrcodeCanvas"></div>
-        <p style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">Ou copie o código abaixo:</p>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Ou copie o código abaixo:</p>
         <div id="pixCopiaCola" class="pix-area"></div>
         <button class="btn-copy" onclick="copiarPix()">📋 COPIAR CÓDIGO PIX</button>
-        <p id="pixValor" style="font-weight:700;color:var(--accent);margin-bottom:12px;"></p>
-        <button class="btn-modal-primary" style="background:linear-gradient(90deg,#15803d,#22c55e);" onclick="finalizarComZap()">✅ Já paguei — Ativar agora!</button>
+        <p id="pixValor" style="font-weight:700;color:var(--accent);margin-bottom:12px"></p>
+        <button class="btn-modal-primary" style="background:linear-gradient(90deg,#15803d,#22c55e)" onclick="finalizarComZap()">✅ Já paguei — Ativar agora!</button>
         <button class="btn-modal-cancel" onclick="document.getElementById('modalPix').style.display='none'">Fechar</button>
     </div>
 </div>
 
+<!-- APP PRINCIPAL -->
 <div id="mainApp">
     <aside class="sidebar">
         <div class="sidebar-logo"><div class="sidebar-logo-text">VF PLAY</div></div>
@@ -382,30 +266,34 @@
         <div class="sidebar-section">
             <span class="sidebar-section-title">LISTAS M3U</span>
             <button class="list-btn" id="btn-lista1" onclick="selecionarLista(1)">
-                <span style="font-size:15px">📡</span>
-                <span>Lista 1 — VF</span>
-                <span class="list-dot"></span>
+                <span style="font-size:15px">📡</span><span>Lista 1 — VF</span><span class="list-dot"></span>
             </button>
             <button class="list-btn" id="btn-lista2" onclick="selecionarLista(2)">
-                <span style="font-size:15px">🎬</span>
-                <span>Lista 2 — 2026</span>
-                <span class="list-dot"></span>
+                <span style="font-size:15px">🎬</span><span>Lista 2 — 2026</span><span class="list-dot"></span>
             </button>
             <button class="list-btn" id="btn-lista3" onclick="selecionarLista(3)">
-                <span style="font-size:15px">🔥</span>
-                <span>Lista 3 — Extra</span>
-                <span class="list-dot"></span>
+                <span style="font-size:15px">🔥</span><span>Lista 3 — Extra</span><span class="list-dot"></span>
             </button>
+            <button class="list-btn" id="btn-lista4" onclick="selecionarLista(4)">
+                <span style="font-size:15px">📲</span><span>Lista 4 — Smarters</span><span class="list-dot"></span>
+            </button>
+        </div>
+
+        <!-- ABAS: CANAIS / FILMES / SÉRIES -->
+        <div class="content-tabs">
+            <button class="ctab active" id="tab-canais"  onclick="mudarAba('canais')">📺 Canais</button>
+            <button class="ctab"        id="tab-filmes"  onclick="mudarAba('filmes')">🎬 Filmes</button>
+            <button class="ctab"        id="tab-series"  onclick="mudarAba('series')">📽 Séries</button>
         </div>
 
         <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍  Buscar canal..." oninput="filtrarCanais(this.value)">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍  Buscar..." oninput="filtrarCanais(this.value)">
         </div>
 
         <div class="channel-list" id="channelList">
-            <div class="welcome-screen" style="height:200px;">
+            <div class="loading-channels" style="margin-top:40px">
                 <span style="font-size:32px">📺</span>
-                <p>Selecione uma lista</p>
+                <span>Selecione uma lista</span>
             </div>
         </div>
 
@@ -425,21 +313,91 @@
         </div>
 
         <div class="video-wrapper">
-            <video id="vfPlayer" class="video-js vjs-default-skin vjs-big-play-centered" playsinline></video>
+            <video id="vfPlayer"
+                class="video-js vjs-default-skin vjs-big-play-centered"
+                controls
+                playsinline
+                preload="auto"
+                style="width:100%;height:100%;object-fit:contain">
+            </video>
             <div class="video-overlay" id="videoOverlay">
                 <div class="welcome-screen">
                     <h2>VF PLAY</h2>
                     <p>Escolha uma lista e selecione um canal</p>
                 </div>
             </div>
+            <!-- IFRAME IPTV SMARTERS (Lista 4) -->
+            <iframe id="smartersFrame"
+                src=""
+                style="display:none;position:absolute;inset:0;width:100%;height:100%;border:none;z-index:20;background:#000"
+                allowfullscreen
+                allow="autoplay; fullscreen; encrypted-media">
+            </iframe>
         </div>
     </div>
-</div>
 
+    <!-- ══ PAINEL FILIPE VOD (Lista 1) ══════════════════════════════ -->
+    <div id="filipePanel" style="display:none;position:absolute;inset:0;z-index:50;background:#0a0a0a;flex-direction:column;">
+
+        <!-- Topbar com botão voltar -->
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;background:#000;border-bottom:1px solid #222;flex-shrink:0">
+            <button onclick="fecharFilipe()" style="background:#1a1a1a;border:1px solid #00ff00;color:#00ff00;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px">← VOLTAR</button>
+            <span style="color:#00ff00;font-weight:700;font-size:13px;letter-spacing:2px">LISTA 1 — VF FILIPE VOD</span>
+        </div>
+
+        <!-- Corpo do Filipe (categorias + lista + player) -->
+        <div style="display:flex;flex:1;overflow:hidden">
+
+            <!-- Categorias -->
+            <div id="fp-cats" style="width:170px;background:#000;border-right:1px solid #222;overflow-y:auto;flex-shrink:0">
+                <div style="padding:10px 12px;border-bottom:1px solid #222">
+                    <div style="display:flex;background:#111;border-radius:6px;overflow:hidden">
+                        <div id="fp-tab-vod"  class="fp-tab fp-tab-active" onclick="fpMudarAba('VOD')"  style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#00ff00">🎬 VODS</div>
+                        <div id="fp-tab-live" class="fp-tab"               onclick="fpMudarAba('LIVE')" style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#555">📺 CANAIS</div>
+                    </div>
+                </div>
+                <div onclick="fpSelecionarCat('TUDO',this)"      style="padding:10px 12px;cursor:pointer;font-size:0.72rem;color:#00ff00;border-left:3px solid #00ff00;background:#1a1a1a;border-bottom:1px solid #111">⭐ TUDO</div>
+                <div onclick="fpSelecionarCat('FAVORITOS',this)" style="padding:10px 12px;cursor:pointer;font-size:0.72rem;color:#777;border-bottom:1px solid #111">★ FAVORITOS</div>
+                <div id="fp-cat-list"></div>
+            </div>
+
+            <!-- Lista de conteúdo -->
+            <div style="width:280px;background:#121212;display:flex;flex-direction:column;border-right:1px solid #222;flex-shrink:0">
+                <div style="padding:10px">
+                    <input id="fp-search" type="text" placeholder="🔍 Buscar..." oninput="fpFiltrar(this.value)"
+                        style="width:100%;padding:9px;border-radius:6px;border:1px solid #333;background:#1a1a1a;color:#fff;outline:none;font-size:12px;box-sizing:border-box">
+                </div>
+                <div id="fp-items" style="flex:1;overflow-y:auto;padding:6px"></div>
+            </div>
+
+            <!-- Player -->
+            <div id="fp-player-wrap" style="flex:1;background:#000;position:relative;display:flex;align-items:center;justify-content:center">
+                <div id="fp-player-overlay" style="position:absolute;top:0;left:0;right:0;padding:14px 18px;background:linear-gradient(to bottom,rgba(0,0,0,.85),transparent);z-index:5;pointer-events:none">
+                    <span id="fp-ep-name" style="color:#00ff00;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1px"></span>
+                </div>
+                <video id="fp-video" style="width:100%;height:100%;background:#000" controls playsinline preload="auto"></video>
+                <div id="fp-welcome" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#333;gap:8px">
+                    <span style="font-size:48px">🎬</span>
+                    <span style="font-size:13px;letter-spacing:2px">SELECIONE UM CONTEÚDO</span>
+                </div>
+                <!-- Controles -->
+                <div style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:6">
+                    <button onclick="fpMudarVel()" id="fp-vel-btn" style="background:rgba(0,0,0,.6);color:#fff;border:1px solid #00ff00;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px">⚡ 1x</button>
+                    <button onclick="fpProximo()"                  style="background:rgba(0,0,0,.6);color:#fff;border:1px solid #00ff00;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px">PRÓXIMO ⏭</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    </div><!-- /.player-area -->
+</div><!-- /#mainApp -->
+
+<!-- ADM -->
 <div id="admPanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h2 style="font-family:'Rajdhani';letter-spacing:2px;">GESTÃO DE CLIENTES</h2>
-        <button class="btn-adm" style="background:var(--red);padding:10px;" onclick="location.reload()">Sair do ADM</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h2 style="font-family:'Rajdhani';letter-spacing:2px">GESTÃO DE CLIENTES</h2>
+        <button class="btn-adm" style="background:var(--red);padding:10px" onclick="location.reload()">Sair do ADM</button>
     </div>
     <div class="table-container">
         <table>
@@ -451,52 +409,65 @@
 
 <script>
 // ================================================================
-// ⚙️ LISTAS M3U — Edite as URLs aqui para trocar futuramente
+// LISTAS — suporta M3U (.m3u / .m3u8) e JSON (URL ou inline)
+// Para JSON, adicione: formato: 'json'
+// Formatos JSON aceitos:
+//   • Array direto:       [{name,url,logo?,group?}, ...]
+//   • Smarters live:      {live_streams:[{name,stream_url,stream_icon?,category_name?},...]}
+//   • Smarters vod:       {vod_streams:[...]}  /  {series:[...]}
+//   • {channels:[...]}    ou  {data:[...]}  (genérico)
 // ================================================================
 const LISTAS = {
-    1: { nome: "Lista 1 — VF",    url: "https://raw.githubusercontent.com/Ramys/Iptv-Brasil-2026/refs/heads/master/CanaisBR03.m3u8" },
-    2: { nome: "Lista 2 — 2026",  url: "https://raw.githubusercontent.com/Ramys/Iptv-Brasil-2026/refs/heads/master/CanaisBR04.m3u8"        },
-    3: { nome: "Lista 3 — Extra", url: "https://raw.githubusercontent.com/Ramys/Iptv-Brasil-2026/refs/heads/master/CanaisBR01.m3u8"        }
+    1: { nome:"Lista 1 — VF",    url:"https://abre.ai/br03comcapas-vf" },
+    2: { nome:"Lista 2 — 2026",  url:"https://abre.ai/br022026" },
+    3: { nome:"Lista 3 — Extra", url:"https://raw.githubusercontent.com/Ramys/Iptv-Brasil-2026/refs/heads/master/CanaisBR01.m3u8" }
+    // Exemplo de lista JSON:
+    // 4: { nome:"TV 002", url:"https://bit.ly/3Qxe1bC", formato:"json" }
 };
-// ================================================================
+// Lista 4 usa o player externo IPTV Smarters via iframe
+const LISTA4_URL = "http://webtv.iptvsmarters.com/switchuser.php";
 
-// Proxy CORS para buscar a M3U (necessário pois os links são externos)
-const CORS_PROXY = "https://corsproxy.io/?url=";
+// Palavras-chave para detectar filmes e séries no group-title ou nome
+const FILME_KEYS  = ['filme','movie','vod','cinema','lançamento','lancamento','4k filmes','filmes'];
+const SERIE_KEYS  = ['série','serie','series','temporada','season','episode','episodio','episódio'];
+
+const CORS_PROXIES = [
+    "https://corsproxy.io/?url=",
+    "https://api.allorigins.win/raw?url=",
+    "https://thingproxy.freeboard.io/fetch/"
+];
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDKPnElj2EBY2Z-2YmrUP5E7ESjnFrJEdo",
-    authDomain: "fvtv-premium.firebaseapp.com",
-    databaseURL: "https://fvtv-premium-default-rtdb.firebaseio.com",
-    projectId: "fvtv-premium",
-    storageBucket: "fvtv-premium.firebasestorage.app",
-    messagingSenderId: "709954808127",
-    appId: "1:709954808127:web:a225917a5b8dce437f4b8a"
+    apiKey:"AIzaSyDKPnElj2EBY2Z-2YmrUP5E7ESjnFrJEdo",
+    authDomain:"fvtv-premium.firebaseapp.com",
+    databaseURL:"https://fvtv-premium-default-rtdb.firebaseio.com",
+    projectId:"fvtv-premium",
+    storageBucket:"fvtv-premium.firebasestorage.app",
+    messagingSenderId:"709954808127",
+    appId:"1:709954808127:web:a225917a5b8dce437f4b8a"
 };
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 let pSel="", vSel=0, pixSel="";
-let allChannels = [];
-let filteredChannels = [];
-let hls = null;
-let listaAtiva = null;
-let vjsPlayer = null;
+let allChannels   = [];   // todos da lista atual
+let listaAtiva    = null;
+let abaAtiva      = 'canais';
 
-// ─── LOGIN ────────────────────────────────────────────
+// ── LOGIN ────────────────────────────────────────────────
 function verificarLoginSalvo() {
     const s = localStorage.getItem('fvtv_code');
-    if(s) { document.getElementById('loginInput').value=s; logar(true); }
+    if(s){ document.getElementById('loginInput').value=s; logar(true); }
 }
 
 function logar(auto=false) {
     const cod = document.getElementById('loginInput').value.trim();
     database.ref('clientes/'+cod).once('value').then(snap=>{
         const d = snap.val();
-        if(d && d.status!=='Bloqueado' && new Date(d.vencimento)>new Date()) {
+        if(d && d.status!=='Bloqueado' && new Date(d.vencimento)>new Date()){
             localStorage.setItem('fvtv_code', cod);
             document.getElementById('salesScreen').style.display='none';
             document.getElementById('mainApp').style.display='flex';
-            initPlayer();
         } else {
             if(!auto) alert("Acesso Inválido ou Expirado!");
             localStorage.removeItem('fvtv_code');
@@ -504,357 +475,750 @@ function logar(auto=false) {
     });
 }
 
-function logout() { localStorage.removeItem('fvtv_code'); location.reload(); }
+function logout(){ localStorage.removeItem('fvtv_code'); location.reload(); }
 
-// ─── INIT VIDEO.JS ────────────────────────────────────
-function initPlayer() {
-    if(vjsPlayer) return;
-    // Configuração idêntica ao IPTV Smarters WebTV
-    vjsPlayer = videojs('vfPlayer', {
-        controls: true,
-        autoplay: false,
-        preload: 'auto',
-        fluid: false,
-        responsive: false,
-        liveui: true,
-        playbackRates: [0.5, 1, 1.5, 2],
-        controlBar: {
-            children: [
-                'playToggle',
-                { name: 'volumePanel', inline: true },
-                'currentTimeDisplay',
-                'timeDivider',
-                'durationDisplay',
-                'progressControl',
-                'liveDisplay',
-                'seekToLive',
-                'remainingTimeDisplay',
-                'customControlSpacer',
-                'playbackRateMenuButton',
-                'chaptersButton',
-                'descriptionsButton',
-                'subsCapsButton',
-                'audioTrackButton',
-                'pictureInPictureToggle',
-                'fullscreenToggle'
-            ]
-        }
+// ── ABA ──────────────────────────────────────────────────
+function mudarAba(aba) {
+    abaAtiva = aba;
+    ['canais','filmes','series'].forEach(a=>{
+        document.getElementById('tab-'+a).classList.toggle('active', a===aba);
     });
-    vjsPlayer.on('error', ()=>{
-        setOverlay('error', 'Erro ao reproduzir o canal');
-    });
-    vjsPlayer.on('waiting', ()=>{ setOverlay('loading'); });
-    vjsPlayer.on('playing', ()=>{ setOverlay('hidden'); });
-    vjsPlayer.on('canplay', ()=>{ setOverlay('hidden'); });
+    document.getElementById('searchInput').value='';
+    renderByAba();
 }
 
-// ─── CADASTRO / PIX ──────────────────────────────────
-function abrirCadastro(p,v,pix) { pSel=p; vSel=v; pixSel=pix; document.getElementById('modalCadastro').style.display='flex'; }
-function fecharCadastro() { document.getElementById('modalCadastro').style.display='none'; }
+function classifyChannel(ch) {
+    const g = (ch.group||'').toLowerCase();
+    const n = (ch.name||'').toLowerCase();
+    for(const k of SERIE_KEYS)  if(g.includes(k)||n.includes(k)) return 'series';
+    for(const k of FILME_KEYS)  if(g.includes(k)||n.includes(k)) return 'filmes';
+    return 'canais';
+}
 
-function salvarNovoCliente() {
+function renderByAba(query='') {
+    const q = query.toLowerCase();
+    const list = allChannels.filter(ch=>{
+        const tipo = classifyChannel(ch);
+        const matchAba = tipo === abaAtiva;
+        const matchQ   = !q || ch.name.toLowerCase().includes(q) || (ch.group||'').toLowerCase().includes(q);
+        return matchAba && matchQ;
+    });
+    renderChannels(list);
+}
+
+// ── PAINEL FILIPE VOD (Lista 1) ───────────────────────────
+let fpDb = [], fpFiltrada = [], fpIndexAtual = -1, fpVel = 1;
+let fpAba = 'VOD', fpCat = 'TUDO';
+let fpFavs     = JSON.parse(localStorage.getItem('filipe_favs') || '[]');
+let fpProgress = JSON.parse(localStorage.getItem('filipe_progress') || '{}');
+let fpCarregou = false;
+const FP_URLS = [
+    "https://raw.githubusercontent.com/filipetopegame/lista.json/main/lista_parte_1.json",
+    "https://raw.githubusercontent.com/filipetopegame/lista.json/main/lista_parte_2.json"
+];
+const FP_TMDB = "15d2ea6d0dc1d246f31f0a73730b214f";
+
+let fpVideoEl = null;
+
+function abrirFilipe() {
+    const panel = document.getElementById('filipePanel');
+    panel.style.display = 'flex';
+    // Para o player principal
+    esconderSmarters();
+    if(vjsPlayer){ try{ vjsPlayer.pause(); }catch(e){} }
+    // Init player nativo
+    fpVideoEl = document.getElementById('fp-video');
+    fpVideoEl.addEventListener('ended', fpProximo);
+    setInterval(()=>{
+        if(!fpVideoEl.paused && fpAba==='VOD' && fpIndexAtual!==-1){
+            fpProgress[fpFiltrada[fpIndexAtual].url] = fpVideoEl.currentTime;
+            localStorage.setItem('filipe_progress', JSON.stringify(fpProgress));
+        }
+    }, 5000);
+    if(!fpCarregou) fpCarregar();
+}
+
+function fecharFilipe() {
+    document.getElementById('filipePanel').style.display = 'none';
+    if(fpVideoEl){ fpVideoEl.pause(); fpVideoEl.src=''; }
+    // Reseta botão ativo
+    listaAtiva = null;
+    [1,2,3,4].forEach(i=>{ const b=document.getElementById('btn-lista'+i); if(b) b.classList.remove('active'); });
+}
+
+async function fpCarregar() {
+    document.getElementById('fp-items').innerHTML = '<div style="padding:20px;text-align:center;color:#555">Carregando...</div>';
+    for(const u of FP_URLS){
+        try{ const r=await fetch(u); fpDb=fpDb.concat(await r.json()); }catch(e){}
+    }
+    fpCarregou = true;
+    fpGerarCats();
+    fpRenderizar();
+}
+
+function fpGetTipo(item){
+    const g=(item.group||'').toLowerCase(), u=(item.url||'').toLowerCase();
+    return (g.includes('filme')||g.includes('serie')||u.includes('.mp4')||u.includes('.mkv')) ? 'VOD' : 'LIVE';
+}
+
+function fpRenderizar(filtro=''){
+    const cont = document.getElementById('fp-items');
+    cont.innerHTML = '';
+    fpFiltrada = fpDb.filter(i=>{
+        const matchAba = fpGetTipo(i)===fpAba;
+        const matchCat = fpCat==='TUDO' ? true : fpCat==='FAVORITOS' ? fpFavs.includes(i.url) : i.group===fpCat;
+        const matchQ   = i.name.toLowerCase().includes(filtro.toLowerCase());
+        return matchAba && matchCat && matchQ;
+    });
+    fpFiltrada.slice(0,120).forEach((item,idx)=>{
+        const isFav = fpFavs.includes(item.url);
+        const hasProg = fpProgress[item.url]>10;
+        const id = btoa(item.url).substring(0,10);
+        const div = document.createElement('div');
+        div.style.cssText = `display:flex;align-items:center;padding:9px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;border-radius:6px;margin-bottom:3px;position:relative;${hasProg?'border-right:3px solid #555':''}`;
+        div.onmouseover=()=>div.style.background='#1e1e1e';
+        div.onmouseout=()=>div.style.background='';
+        div.innerHTML = `
+            <div style="width:38px;height:55px;background:#222;border-radius:4px;overflow:hidden;flex-shrink:0;margin-right:10px;position:relative">
+                <img id="fpi-${id}" src="" style="width:100%;height:100%;object-fit:cover" onerror="this.src=''">
+            </div>
+            <div style="flex:1;overflow:hidden">
+                <div style="font-size:0.78rem;color:#eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
+                <div style="font-size:0.65rem;color:#555;margin-top:2px">${item.group||''}</div>
+            </div>
+            <span onclick="fpToggleFav(event,'${item.url}')" style="font-size:1.1rem;color:${isFav?'#ffca28':'#333'};margin-left:6px;flex-shrink:0">★</span>`;
+        div.onclick = ()=>fpPlay(idx);
+        cont.appendChild(div);
+        fpBuscarCapa(item).then(url=>{
+            const img=document.getElementById('fpi-'+id);
+            if(img && url) img.src=url;
+        });
+    });
+    if(!fpFiltrada.length) cont.innerHTML='<div style="padding:20px;text-align:center;color:#555;font-size:12px">Nenhum resultado</div>';
+}
+
+async function fpBuscarCapa(item){
+    if(item.url.includes('.mp4')||item.url.includes('.mkv')){
+        const q=encodeURIComponent(item.name.split('(')[0].trim());
+        try{
+            const r=await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${FP_TMDB}&query=${q}&language=pt-BR`);
+            const d=await r.json();
+            if(d.results?.[0]?.poster_path) return `https://image.tmdb.org/t/p/w200${d.results[0].poster_path}`;
+        }catch(e){}
+    }
+    return item.logo||null;
+}
+
+function fpPlay(idx){
+    if(idx<0||idx>=fpFiltrada.length) return;
+    fpIndexAtual=idx;
+    const item=fpFiltrada[idx];
+    document.getElementById('fp-ep-name').textContent=item.name;
+    document.getElementById('fp-welcome').style.display='none';
+    fpVideoEl.src=item.url;
+    fpVideoEl.load();
+    fpVideoEl.onloadedmetadata=()=>{
+        if(fpAba==='VOD'&&fpProgress[item.url]) fpVideoEl.currentTime=fpProgress[item.url];
+        fpVideoEl.playbackRate=fpVel;
+        fpVideoEl.play();
+    };
+    document.querySelectorAll('#fp-items > div').forEach((el,i)=>{
+        el.style.borderLeft = i===idx ? '3px solid #00ff00' : '';
+    });
+}
+
+function fpProximo(){ if(fpIndexAtual+1<fpFiltrada.length) fpPlay(fpIndexAtual+1); }
+
+function fpMudarVel(){
+    fpVel = fpVel===1?1.5:(fpVel===1.5?2:1);
+    if(fpVideoEl) fpVideoEl.playbackRate=fpVel;
+    document.getElementById('fp-vel-btn').textContent=`⚡ ${fpVel}x`;
+}
+
+function fpToggleFav(e, url){
+    e.stopPropagation();
+    fpFavs = fpFavs.includes(url) ? fpFavs.filter(f=>f!==url) : [...fpFavs, url];
+    localStorage.setItem('filipe_favs', JSON.stringify(fpFavs));
+    fpRenderizar(document.getElementById('fp-search').value);
+}
+
+function fpFiltrar(v){ fpRenderizar(v); }
+
+function fpSelecionarCat(cat, el){
+    fpCat=cat;
+    document.querySelectorAll('#fp-cats .fp-cat-item, #fp-cats > div[onclick]').forEach(d=>{ d.style.color='#777'; d.style.borderLeft='none'; d.style.background=''; });
+    el.style.color='#00ff00'; el.style.borderLeft='3px solid #00ff00'; el.style.background='#1a1a1a';
+    fpRenderizar(document.getElementById('fp-search').value);
+}
+
+function fpMudarAba(tipo){
+    fpAba=tipo; fpCat='TUDO';
+    document.getElementById('fp-tab-vod').style.color  = tipo==='VOD' ?'#00ff00':'#555';
+    document.getElementById('fp-tab-live').style.color = tipo==='LIVE'?'#ff0000':'#555';
+    fpGerarCats();
+    fpRenderizar();
+}
+
+function fpGerarCats(){
+    const cont=document.getElementById('fp-cat-list');
+    cont.innerHTML='';
+    const cats=[...new Set(fpDb.filter(i=>fpGetTipo(i)===fpAba).map(i=>i.group||'Geral'))].sort();
+    cats.forEach(c=>{
+        const d=document.createElement('div');
+        d.className='fp-cat-item';
+        d.textContent=c.toUpperCase();
+        d.style.cssText='padding:9px 12px;cursor:pointer;font-size:0.68rem;color:#666;border-bottom:1px solid #111;transition:.2s';
+        d.onmouseover=()=>{ if(fpCat!==c){ d.style.color='#aaa'; d.style.background='#111'; } };
+        d.onmouseout=()=>{ if(fpCat!==c){ d.style.color='#666'; d.style.background=''; } };
+        d.onclick=()=>fpSelecionarCat(c,d);
+        cont.appendChild(d);
+    });
+}
+
+// ── CARREGAR LISTA M3U ────────────────────────────────────
+function esconderSmarters() {
+    const fr = document.getElementById('smartersFrame');
+    fr.style.display = 'none';
+    fr.src = '';
+    document.getElementById('vfPlayer').style.display = '';
+    document.getElementById('videoOverlay').style.display = '';
+}
+
+async function selecionarLista(num) {
+    if(listaAtiva===num) return;
+    listaAtiva = num;
+    [1,2,3,4].forEach(i=>{ const b=document.getElementById('btn-lista'+i); if(b) b.classList.toggle('active',i===num); });
+
+    // Lista 1 → abre o painel Filipe VOD
+    if(num === 1) {
+        abrirFilipe();
+        return;
+    }
+
+    // Lista 4 → abre o player IPTV Smarters em iframe
+    if(num === 4) {
+        const cl = document.getElementById('channelList');
+        cl.innerHTML = `<div class="loading-channels" style="padding:20px 10px;text-align:center">
+            <span style="font-size:28px">📲</span>
+            <span style="color:var(--accent);font-weight:700;font-size:11px;letter-spacing:1px;margin-top:8px">IPTV SMARTERS</span>
+            <span style="font-size:10px;color:var(--text-dim);margin-top:4px">Player carregado no painel ao lado</span>
+        </div>`;
+        document.getElementById('nowPlayingName').textContent = 'IPTV Smarters';
+        document.getElementById('nowPlayingStatus').textContent = 'Player externo ativo';
+        document.getElementById('liveBadge').style.display = 'inline-block';
+        // Esconde o player interno e mostra o iframe
+        document.getElementById('vfPlayer').style.display = 'none';
+        document.getElementById('videoOverlay').style.display = 'none';
+        const fr = document.getElementById('smartersFrame');
+        fr.src = LISTA4_URL;
+        fr.style.display = 'block';
+        return;
+    }
+
+    // Para qualquer outra lista, garante que o iframe Smarters seja escondido
+    esconderSmarters();
+
+    const cl = document.getElementById('channelList');
+    cl.innerHTML = `<div class="loading-channels"><div class="spinner"></div><span>Carregando lista...</span></div>`;
+
+    const lista = LISTAS[num];
+    let rawText = null;
+
+    for(const proxy of ['', ...CORS_PROXIES]) {
+        try {
+            const fetchUrl = proxy ? (proxy + encodeURIComponent(lista.url)) : lista.url;
+            const r = await fetch(fetchUrl, {cache:'no-store', signal: AbortSignal.timeout(12000)});
+            if(!r.ok) continue;
+            const t = await r.text();
+            const trimmed = t.trim();
+            // Aceita M3U ou JSON (objeto/array)
+            if(trimmed.includes('#EXTINF') || trimmed.includes('#EXTM3U') ||
+               trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                rawText = trimmed; break;
+            }
+        } catch(e){ continue; }
+    }
+
+    if(!rawText){
+        cl.innerHTML = `<div class="loading-channels"><span style="color:var(--red);text-align:center">Falha ao carregar a lista.<br><small>Verifique sua conexão</small></span>
+            <button onclick="selecionarLista(${num})" style="background:var(--accent2);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;margin-top:6px">Tentar novamente</button></div>`;
+        return;
+    }
+
+    // Detecta formato: JSON explícito, auto-detecção ou M3U
+    const isJson = lista.formato === 'json' ||
+                   rawText.startsWith('{') || rawText.startsWith('[');
+    allChannels = isJson ? parseJSON(rawText) : parseM3U(rawText);
+
+    if(!allChannels.length){
+        cl.innerHTML = `<div class="loading-channels"><span style="color:var(--orange);text-align:center">Lista carregada, mas nenhum canal encontrado.<br><small>Verifique o formato do arquivo</small></span></div>`;
+        return;
+    }
+
+    document.getElementById('searchInput').value='';
+    renderByAba();
+}
+
+// ── PARSE JSON ────────────────────────────────────────────
+// Suporta múltiplos formatos JSON de listas IPTV
+function parseJSON(text) {
+    let data;
+    try { data = JSON.parse(text); } catch(e) { return []; }
+
+    const channels = [];
+
+    // Normaliza um item individual → {name, url, logo, group}
+    function normalizar(item, grupoFallback) {
+        const name = item.name || item.title || item.stream_name ||
+                     item.channel_name || item.tvg_name || item.tvg_id || '';
+        const url  = item.url  || item.stream_url || item.link ||
+                     item.stream || item.direct_source || '';
+        const logo = item.logo || item.stream_icon || item.img ||
+                     item.icon || item.tvg_logo || item.cover || '';
+        const group = item.group || item.group_title || item.category_name ||
+                      item.category || item.type || grupoFallback || 'Geral';
+        if(!name || !url) return null;
+        return { name: String(name).trim(), url: String(url).trim(),
+                 logo: String(logo).trim(), group: String(group).trim() };
+    }
+
+    // ① Array direto: [{name, url, ...}, ...]
+    if(Array.isArray(data)) {
+        data.forEach(item => {
+            const ch = normalizar(item, 'Geral');
+            if(ch) channels.push(ch);
+        });
+        return channels;
+    }
+
+    // ② Formato Smarters / padrões com chaves de categoria
+    const mapeamentos = [
+        // Chave de lista       , campo URL alternativo , categoria padrão
+        ['live_streams',   'stream_url',   'Ao Vivo'   ],
+        ['vod_streams',    'stream_url',   'Filmes'    ],
+        ['series',         'stream_url',   'Séries'    ],
+        ['channels',       'url',          'Geral'     ],
+        ['streams',        'url',          'Geral'     ],
+        ['data',           'url',          'Geral'     ],
+        ['items',          'url',          'Geral'     ],
+        ['playlist',       'url',          'Geral'     ],
+    ];
+
+    let encontrou = false;
+    for(const [chave, , grupoDefault] of mapeamentos) {
+        if(Array.isArray(data[chave])) {
+            encontrou = true;
+            data[chave].forEach(item => {
+                const ch = normalizar(item, grupoDefault);
+                if(ch) channels.push(ch);
+            });
+        }
+    }
+    if(encontrou) return channels;
+
+    // ③ Objeto com categorias como chaves: { "Esportes": [{...}], "Filmes": [{...}] }
+    const valores = Object.values(data);
+    if(valores.every(v => Array.isArray(v))) {
+        Object.entries(data).forEach(([categoria, lista]) => {
+            lista.forEach(item => {
+                const ch = normalizar(item, categoria);
+                if(ch) channels.push(ch);
+            });
+        });
+        return channels;
+    }
+
+    // ④ Fallback: procura qualquer array dentro do objeto
+    for(const val of valores) {
+        if(Array.isArray(val) && val.length > 0 && val[0].url || val[0]?.stream_url) {
+            val.forEach(item => {
+                const ch = normalizar(item, 'Geral');
+                if(ch) channels.push(ch);
+            });
+            if(channels.length) return channels;
+        }
+    }
+
+    return channels;
+}
+
+// ── PARSE M3U ─────────────────────────────────────────────
+function parseM3U(text) {
+    const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+    const channels = [];
+    let current = null;
+    for(let i=0;i<lines.length;i++){
+        const line = lines[i];
+        if(line.startsWith('#EXTINF')){
+            current = {name:'',group:'Geral',logo:'',url:''};
+            const nm = line.match(/,(.+)$/); if(nm) current.name=nm[1].trim();
+            const gm = line.match(/group-title="([^"]*)"/i); if(gm) current.group=gm[1]||'Geral';
+            const lm = line.match(/tvg-logo="([^"]*)"/i); if(lm) current.logo=lm[1]||'';
+        } else if(current && !line.startsWith('#')){
+            current.url=line; channels.push(current); current=null;
+        }
+    }
+    return channels;
+}
+
+// ── FILTRAR ───────────────────────────────────────────────
+function filtrarCanais(q){ renderByAba(q); }
+
+// ── RENDERIZAR ────────────────────────────────────────────
+function renderChannels(channels) {
+    const cl = document.getElementById('channelList');
+    cl.innerHTML='';
+
+    if(!allChannels.length){
+        cl.innerHTML='<div class="loading-channels"><span>Selecione uma lista primeiro</span></div>';
+        return;
+    }
+    if(!channels.length){
+        cl.innerHTML='<div class="loading-channels"><span>Nenhum item encontrado</span></div>';
+        return;
+    }
+
+    // Agrupar
+    const groups = {};
+    channels.forEach(ch=>{ if(!groups[ch.group]) groups[ch.group]=[]; groups[ch.group].push(ch); });
+
+    Object.keys(groups).sort().forEach(gName=>{
+        const wrap = document.createElement('div');
+        const header = document.createElement('div');
+        header.className='group-header';
+        header.innerHTML=`<span>${gName}</span><span style="margin-left:auto;font-size:10px;opacity:.5">${groups[gName].length}</span>`;
+        const body = document.createElement('div');
+        body.className='group-channels';
+        header.onclick=()=>{ header.classList.toggle('collapsed'); body.classList.toggle('collapsed'); };
+
+        groups[gName].forEach(ch=>{
+            const item = document.createElement('div');
+            item.className='channel-item';
+            const ini = ch.name.substring(0,2).toUpperCase();
+            const logoHtml = ch.logo
+                ? `<img class="channel-logo" src="${ch.logo}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="channel-logo-placeholder" style="display:none">${ini}</div>`
+                : `<div class="channel-logo-placeholder">${ini}</div>`;
+            item.innerHTML=`${logoHtml}<div class="channel-info"><div class="channel-name">${ch.name}</div><div class="channel-group">${ch.group}</div></div>`;
+            item.onclick=()=>reproduzirCanal(ch, item);
+            body.appendChild(item);
+        });
+
+        wrap.appendChild(header);
+        wrap.appendChild(body);
+        cl.appendChild(wrap);
+    });
+}
+
+// ── PLAYER ENGINE — Video.js principal + fallbacks ────────
+// Video.js (VHS) → HLS.js → flv.js → dash.js → Shaka → native
+
+let vjsPlayer  = null;
+let hlsInst    = null;
+let flvInst    = null;
+let dashInst   = null;
+let shakaInst  = null;
+
+function destruirPlayers() {
+    if(vjsPlayer)  { try{ vjsPlayer.dispose();   }catch(e){} vjsPlayer  = null; }
+    if(hlsInst)    { try{ hlsInst.destroy();     }catch(e){} hlsInst    = null; }
+    if(flvInst)    { try{ flvInst.destroy();     }catch(e){} flvInst    = null; }
+    if(dashInst)   { try{ dashInst.destroy();    }catch(e){} dashInst   = null; }
+    if(shakaInst)  { try{ shakaInst.destroy();   }catch(e){} shakaInst  = null; }
+    // Recria o elemento video (Video.js faz dispose do DOM)
+    const wrapper = document.querySelector('.video-wrapper');
+    let vid = document.getElementById('vfPlayer');
+    if(!vid) {
+        vid = document.createElement('video');
+        vid.id = 'vfPlayer';
+        vid.className = 'video-js vjs-default-skin vjs-big-play-centered';
+        vid.setAttribute('controls','');
+        vid.setAttribute('playsinline','');
+        vid.setAttribute('preload','auto');
+        vid.style.cssText = 'width:100%;height:100%;object-fit:contain';
+        wrapper.insertBefore(vid, wrapper.firstChild);
+    }
+}
+
+function detectFormat(url) {
+    const u = url.toLowerCase().split('?')[0];
+    if(u.includes('.mpd'))                                         return 'dash';
+    if(u.includes('.flv'))                                         return 'flv';
+    if(u.includes('.ts') || u.includes('/ts/') || u.includes('type=ts')) return 'ts';
+    if(u.includes('.m3u8') || u.includes('/hls/') || u.includes('type=m3u')) return 'hls';
+    if(u.includes('.mp4') || u.includes('.mkv') || u.includes('.webm')) return 'native';
+    return 'hls'; // padrão IPTV
+}
+
+function reproduzirCanal(ch, itemEl) {
+    document.querySelectorAll('.channel-item').forEach(el=>el.classList.remove('playing'));
+    if(itemEl) itemEl.classList.add('playing');
+
+    document.getElementById('nowPlayingName').textContent   = ch.name;
+    document.getElementById('nowPlayingStatus').textContent = ch.group;
+    document.getElementById('liveBadge').style.display      = 'inline-block';
+    const logoEl = document.getElementById('nowPlayingLogo');
+    if(ch.logo){ logoEl.src=ch.logo; logoEl.style.display='block'; }
+    else logoEl.style.display='none';
+
+    setOverlay('loading');
+    destruirPlayers();
+
+    const fmt   = detectFormat(ch.url);
+    const queue = buildQueue(ch.url, fmt);
+    tentarFila(ch, queue, 0);
+}
+
+function buildQueue(url, fmt) {
+    const q = [];
+    // 1) Video.js (VHS — suporta HLS, DASH, MP4, TS via MSE, igual IPTV Smarters)
+    q.push({type:'videojs', url});
+
+    // 2) Direto por formato
+    if(fmt==='flv')                q.push({type:'flv',    url});
+    if(fmt==='dash')               q.push({type:'dash',   url});
+    if(fmt==='hls'||fmt==='ts')  { q.push({type:'hls',    url}); q.push({type:'native', url}); }
+    if(fmt==='native')             q.push({type:'native', url});
+    if(!q.find(x=>x.type==='hls'   &&x.url===url)) q.push({type:'hls',    url});
+    if(!q.find(x=>x.type==='shaka' &&x.url===url)) q.push({type:'shaka',  url});
+    if(!q.find(x=>x.type==='native'&&x.url===url)) q.push({type:'native', url});
+
+    // 3) Via proxy CORS (resolve Mixed Content HTTP→HTTPS)
+    CORS_PROXIES.forEach(proxy=>{
+        const pu = proxy + encodeURIComponent(url);
+        q.push({type:'videojs', url: pu});
+        q.push({type:'hls',     url: pu});
+        q.push({type:'native',  url: pu});
+        if(fmt==='flv')  q.push({type:'flv',  url: pu});
+        if(fmt==='dash') q.push({type:'dash', url: pu});
+    });
+
+    // Remove duplicatas
+    const seen = new Set();
+    return q.filter(x=>{ const k=x.type+'|'+x.url; return seen.has(k)?false:(seen.add(k),true); });
+}
+
+function tentarFila(ch, queue, idx) {
+    if(idx >= queue.length) {
+        setOverlay('error', `Canal indisponível: "${ch.name}"`, ch.url);
+        return;
+    }
+    const { type, url } = queue[idx];
+    const next = () => { destruirPlayers(); tentarFila(ch, queue, idx + 1); };
+
+    // Progresso no overlay
+    const ov = document.getElementById('videoOverlay');
+    if(!ov.classList.contains('hidden')) {
+        const msg = idx === 0 ? 'Carregando stream...' : `Tentando ${type.toUpperCase()} (${idx+1}/${queue.length})...`;
+        ov.innerHTML = `<div class="spinner"></div><div class="overlay-msg">${msg}</div>`;
+    }
+
+    destruirPlayers();
+    const video = document.getElementById('vfPlayer');
+    if(!video) return;
+
+    switch(type) {
+
+        // ── Video.js VHS (engine principal — igual IPTV Smarters) ─
+        case 'videojs':
+            if(typeof videojs === 'undefined'){ next(); return; }
+            try {
+                vjsPlayer = videojs('vfPlayer', {
+                    autoplay: true,
+                    controls: true,
+                    preload: 'auto',
+                    fluid: false,
+                    fill: true,
+                    liveui: true,
+                    html5: {
+                        vhs: {
+                            overrideNative: !videojs.browser.IS_SAFARI,
+                            enableLowInitialPlaylist: true,
+                            smoothQualityChange: true,
+                            allowSeeksWithinUnsafeLiveWindow: true
+                        },
+                        nativeAudioTracks: false,
+                        nativeVideoTracks: false
+                    }
+                });
+                vjsPlayer.src({ src: url, type: detectMime(url) });
+                vjsPlayer.ready(()=>{
+                    vjsPlayer.play().catch(()=>{});
+                });
+                vjsPlayer.on('playing', ()=>{ setOverlay('hidden'); });
+                vjsPlayer.on('error', ()=>{
+                    console.warn(`[VJS] erro em: ${url.substring(0,60)}`);
+                    next();
+                });
+                // Timeout se não tocar em 12s
+                const vjsTimeout = setTimeout(()=>{
+                    if(vjsPlayer && vjsPlayer.paused() && vjsPlayer.readyState() < 3) next();
+                }, 12000);
+                vjsPlayer.on('playing', ()=>clearTimeout(vjsTimeout));
+                vjsPlayer.on('error',   ()=>clearTimeout(vjsTimeout));
+            } catch(e){ next(); }
+            break;
+
+        // ── HLS.js ────────────────────────────────────────────
+        case 'hls':
+            if(!Hls.isSupported()){ next(); return; }
+            hlsInst = new Hls({
+                maxBufferLength: 30,
+                manifestLoadingTimeOut: 10000,
+                levelLoadingTimeOut: 10000,
+                fragLoadingTimeOut: 20000,
+                enableWorker: true,
+                xhrSetup: xhr => {
+                    xhr.withCredentials = false;
+                    try { xhr.setRequestHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'); } catch(e){}
+                }
+            });
+            hlsInst.loadSource(url);
+            hlsInst.attachMedia(video);
+            hlsInst.on(Hls.Events.MANIFEST_PARSED, ()=>{ setOverlay('hidden'); video.play().catch(()=>{}); });
+            hlsInst.on(Hls.Events.ERROR, (e, data)=>{
+                if(data.fatal){ console.warn(`[HLS] fatal em: ${url.substring(0,60)}`); hlsInst.destroy(); hlsInst=null; next(); }
+            });
+            break;
+
+        // ── flv.js ────────────────────────────────────────────
+        case 'flv':
+            if(typeof flvjs==='undefined'||!flvjs.isSupported()){ next(); return; }
+            flvInst = flvjs.createPlayer({ type:'flv', url, isLive:true, cors:true });
+            flvInst.attachMediaElement(video);
+            flvInst.load();
+            flvInst.on(flvjs.Events.ERROR, ()=>{ flvInst.destroy(); flvInst=null; next(); });
+            flvInst.play();
+            setOverlay('hidden');
+            break;
+
+        // ── dash.js ───────────────────────────────────────────
+        case 'dash':
+            if(typeof dashjs==='undefined'){ next(); return; }
+            dashInst = dashjs.MediaPlayer().create();
+            dashInst.initialize(video, url, true);
+            dashInst.on(dashjs.MediaPlayer.events.ERROR, ()=>{ dashInst.destroy(); dashInst=null; next(); });
+            dashInst.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, ()=>{ setOverlay('hidden'); });
+            break;
+
+        // ── Shaka Player ──────────────────────────────────────
+        case 'shaka':
+            if(typeof shaka==='undefined'){ next(); return; }
+            shaka.polyfill.installAll();
+            if(!shaka.Player.isBrowserSupported()){ next(); return; }
+            shakaInst = new shaka.Player(video);
+            shakaInst.load(url).then(()=>{ setOverlay('hidden'); video.play().catch(()=>{}); })
+                               .catch(()=>{ shakaInst.destroy(); shakaInst=null; next(); });
+            break;
+
+        // ── Native src ────────────────────────────────────────
+        case 'native':
+        default:
+            video.src = url;
+            video.load();
+            const t = setTimeout(()=>{ if(video.readyState<2){ cleanup(); next(); } }, 9000);
+            const cleanup = ()=>{
+                clearTimeout(t);
+                video.removeEventListener('canplay', onOk);
+                video.removeEventListener('error',   onErr);
+            };
+            const onOk  = ()=>{ cleanup(); setOverlay('hidden'); video.play().catch(()=>{}); };
+            const onErr = ()=>{ cleanup(); next(); };
+            video.addEventListener('canplay', onOk,  {once:true});
+            video.addEventListener('error',   onErr, {once:true});
+            break;
+    }
+}
+
+// Detecta o MIME type correto para Video.js
+function detectMime(url) {
+    const u = url.toLowerCase().split('?')[0];
+    if(u.includes('.mpd'))                        return 'application/dash+xml';
+    if(u.includes('.m3u8')||u.includes('/hls/'))  return 'application/x-mpegURL';
+    if(u.includes('.mp4'))                        return 'video/mp4';
+    if(u.includes('.flv'))                        return 'video/x-flv';
+    if(u.includes('.webm'))                       return 'video/webm';
+    return 'application/x-mpegURL'; // padrão IPTV
+}
+
+function setOverlay(state, msg='', url=''){
+    const ov = document.getElementById('videoOverlay');
+    if(state==='hidden'){ ov.classList.add('hidden'); return; }
+    ov.classList.remove('hidden');
+    ov.style.pointerEvents = state==='error' ? 'auto' : 'none';
+    if(state==='loading'){
+        ov.innerHTML='<div class="spinner"></div><div class="overlay-msg">Carregando stream...</div>';
+    } else if(state==='error'){
+        const testBtn = url ? `<br><button onclick="window.open('${url.replace(/'/g,"\\'")}','_blank')" style="margin-top:10px;padding:6px 14px;background:rgba(0,195,255,0.15);color:var(--accent);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-size:11px">🔗 Testar URL diretamente</button>` : '';
+        ov.innerHTML=`<div class="overlay-msg">⚠️ <b>${msg||'Erro ao reproduzir'}</b><br><small style="opacity:.6;margin-top:6px;display:block">Tente outro canal ou verifique se a lista está atualizada${testBtn}</small></div>`;
+    }
+}
+
+// ── CADASTRO / PIX ────────────────────────────────────────
+function abrirCadastro(p,v,pix){ pSel=p; vSel=v; pixSel=pix; document.getElementById('modalCadastro').style.display='flex'; }
+function fecharCadastro(){ document.getElementById('modalCadastro').style.display='none'; }
+
+function salvarNovoCliente(){
     const n=document.getElementById('cadNome').value;
     const c=document.getElementById('cadCodigo').value;
     if(!n||!c) return alert("Preencha nome e código!");
-    database.ref('clientes/'+c).set({ nome:n, plano:pSel, criadoEm:new Date().toISOString(), vencimento:new Date().toISOString(), status:'Pendente' }).then(mostrarPix);
+    database.ref('clientes/'+c).set({nome:n,plano:pSel,criadoEm:new Date().toISOString(),vencimento:new Date().toISOString(),status:'Pendente'}).then(mostrarPix);
 }
 
-function mostrarPix() {
+function mostrarPix(){
     document.getElementById('modalCadastro').style.display='none';
     document.getElementById('modalPix').style.display='flex';
     document.getElementById('pixValor').innerText="Total: R$ "+vSel+",00";
     document.getElementById('pixCopiaCola').innerText=pixSel;
-    document.getElementById('qrcodeCanvas').innerHTML="";
-    if(pixSel) new QRCode(document.getElementById("qrcodeCanvas"),{text:pixSel,width:160,height:160});
+    document.getElementById('qrcodeCanvas').innerHTML='';
+    if(pixSel) new QRCode(document.getElementById('qrcodeCanvas'),{text:pixSel,width:160,height:160});
 }
 
-function copiarPix() { navigator.clipboard.writeText(pixSel); alert("Código Pix copiado!"); }
+function copiarPix(){ navigator.clipboard.writeText(pixSel); alert("Código Pix copiado!"); }
 
-function finalizarComZap() {
+function finalizarComZap(){
     const n=document.getElementById('cadNome').value;
     const c=document.getElementById('cadCodigo').value;
     window.open(`https://wa.me/5521992976849?text=${encodeURIComponent(`Olá! Paguei o PIX do plano ${pSel}:\n*Nome:* ${n}\n*Código:* ${c}`)}`,'_blank');
     location.reload();
 }
 
-// ─── PARSER M3U ──────────────────────────────────────
-function parseM3U(text) {
-    const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-    const channels = [];
-    let current = null;
-
-    for(let i=0; i<lines.length; i++) {
-        const line = lines[i];
-        if(line.startsWith('#EXTINF')) {
-            current = { name:'', group:'Geral', logo:'', url:'' };
-            // Nome
-            const nameMatch = line.match(/,(.+)$/);
-            if(nameMatch) current.name = nameMatch[1].trim();
-            // Grupo
-            const groupMatch = line.match(/group-title="([^"]*)"/i);
-            if(groupMatch) current.group = groupMatch[1] || 'Geral';
-            // Logo
-            const logoMatch = line.match(/tvg-logo="([^"]*)"/i);
-            if(logoMatch) current.logo = logoMatch[1] || '';
-        } else if(current && !line.startsWith('#')) {
-            current.url = line;
-            channels.push(current);
-            current = null;
-        }
-    }
-    return channels;
-}
-
-// ─── CARREGAR LISTA M3U ───────────────────────────────
-async function selecionarLista(num) {
-    if(listaAtiva===num) return;
-    listaAtiva = num;
-
-    // Atualizar botões
-    [1,2,3].forEach(i=>document.getElementById('btn-lista'+i).classList.toggle('active',i===num));
-
-    // Mostrar loading na lista
-    const cl = document.getElementById('channelList');
-    cl.innerHTML = `<div class="loading-channels"><div class="spinner"></div><span>Carregando lista...</span></div>`;
-
-    const lista = LISTAS[num];
-
-    try {
-        // Tenta direto primeiro, depois com proxy
-        let text = null;
-        try {
-            const r = await fetch(lista.url, {cache:'no-store'});
-            if(!r.ok) throw new Error('direto');
-            text = await r.text();
-            if(!text.includes('#EXTM3U') && !text.includes('#EXTINF')) throw new Error('não é m3u');
-        } catch(e) {
-            const r2 = await fetch(CORS_PROXY + encodeURIComponent(lista.url), {cache:'no-store'});
-            if(!r2.ok) throw new Error('Falha ao carregar lista');
-            text = await r2.text();
-        }
-
-        allChannels = parseM3U(text);
-        if(allChannels.length === 0) throw new Error('Nenhum canal encontrado na lista');
-
-        filteredChannels = [...allChannels];
-        renderChannels(allChannels);
-        document.getElementById('searchInput').value='';
-    } catch(err) {
-        cl.innerHTML = `<div class="loading-channels"><span style="color:var(--red)">Erro ao carregar lista.<br><small>${err.message}</small></span><button onclick="selecionarLista(${num})" style="background:var(--accent2);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;margin-top:6px;">Tentar novamente</button></div>`;
-    }
-}
-
-// ─── RENDERIZAR LISTA DE CANAIS ───────────────────────
-function renderChannels(channels) {
-    const cl = document.getElementById('channelList');
-    cl.innerHTML = '';
-
-    if(channels.length===0) {
-        cl.innerHTML='<div class="loading-channels"><span>Nenhum canal encontrado</span></div>';
-        return;
-    }
-
-    // Agrupar por grupo
-    const groups = {};
-    channels.forEach(ch=>{
-        if(!groups[ch.group]) groups[ch.group]=[];
-        groups[ch.group].push(ch);
-    });
-
-    Object.keys(groups).sort().forEach(groupName=>{
-        const groupDiv = document.createElement('div');
-
-        const header = document.createElement('div');
-        header.className = 'group-header';
-        header.innerHTML = `<span>${groupName}</span><span style="margin-left:auto;font-size:10px;opacity:.5">${groups[groupName].length}</span>`;
-        header.onclick = ()=>{
-            header.classList.toggle('collapsed');
-            body.classList.toggle('collapsed');
-        };
-
-        const body = document.createElement('div');
-        body.className = 'group-channels';
-
-        groups[groupName].forEach(ch=>{
-            const item = document.createElement('div');
-            item.className = 'channel-item';
-            item.dataset.url = ch.url;
-            item.dataset.name = ch.name;
-            item.dataset.logo = ch.logo;
-
-            const initials = ch.name.substring(0,2).toUpperCase();
-            const logoHtml = ch.logo
-                ? `<img class="channel-logo" src="${ch.logo}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`+
-                  `<div class="channel-logo-placeholder" style="display:none">${initials}</div>`
-                : `<div class="channel-logo-placeholder">${initials}</div>`;
-
-            item.innerHTML = `${logoHtml}<div class="channel-info"><div class="channel-name">${ch.name}</div><div class="channel-group">${ch.group}</div></div>`;
-            item.onclick = ()=>reproduzirCanal(ch);
-            body.appendChild(item);
-        });
-
-        groupDiv.appendChild(header);
-        groupDiv.appendChild(body);
-        cl.appendChild(groupDiv);
-    });
-}
-
-// ─── BUSCA ────────────────────────────────────────────
-function filtrarCanais(q) {
-    if(!q.trim()) { renderChannels(allChannels); return; }
-    const lower = q.toLowerCase();
-    const filtered = allChannels.filter(ch=>ch.name.toLowerCase().includes(lower)||ch.group.toLowerCase().includes(lower));
-    renderChannels(filtered);
-}
-
-// ─── PLAYER HLS (CORRIGIDO PARA USO LOCAL) ──────────────────
-function reproduzirCanal(ch) {
-    // Marcar ativo na lista
-    document.querySelectorAll('.channel-item').forEach(el=>{
-        el.classList.toggle('playing', el.dataset.name===ch.name && el.dataset.url===ch.url);
-    });
-
-    // Topbar
-    document.getElementById('nowPlayingName').textContent = ch.name;
-    document.getElementById('nowPlayingStatus').textContent = ch.group;
-    document.getElementById('liveBadge').style.display='inline-block';
-    const logoEl = document.getElementById('nowPlayingLogo');
-    if(ch.logo) { logoEl.src=ch.logo; logoEl.style.display='block'; }
-    else logoEl.style.display='none';
-
-    // Overlay carregando
-    setOverlay('loading');
-
-    // Destruir HLS anterior e resetar player
-    if(hls) { hls.destroy(); hls=null; }
-    if(vjsPlayer) {
-        vjsPlayer.pause();
-        vjsPlayer.src('');
-    }
-
-    const url = ch.url;
-
-    // Detecção de acesso local (C:/...) para evitar erro CORS da imagem
-    if(window.location.protocol === 'file:') {
-        reproduzirComProxy(ch, 0);
-        return;
-    }
-
-    if(Hls.isSupported()) {
-        hls = new Hls({
-            maxBufferLength: 30,
-            manifestLoadingTimeOut: 15000,
-            enableWorker: true,
-            xhrSetup: function(xhr, url) {
-                xhr.withCredentials = false; // Garante reprodução de links externos
-            }
-        });
-        hls.loadSource(url);
-        hls.attachMedia(vjsPlayer.tech().el());
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{
-            vjsPlayer.play().then(()=>setOverlay('hidden')).catch(()=>setOverlay('hidden'));
-        });
-        hls.on(Hls.Events.ERROR, (e,data)=>{
-            if(data.fatal) {
-                hls.destroy(); hls=null;
-                reproduzirComProxy(ch, 0); // Tenta proxy se o acesso direto falhar
-            }
-        });
-    } else if(vjsPlayer.tech().el().canPlayType('application/vnd.apple.mpegurl')) {
-        vjsPlayer.src({ src: url, type: 'application/x-mpegURL' });
-        vjsPlayer.play().then(()=>setOverlay('hidden')).catch(()=>reproduzirComProxyNativo(ch));
-    } else {
-        reproduzirComProxy(ch, 0);
-    }
-}
-
-const PROXIES = [
-    "https://corsproxy.io/?url=",
-    "https://api.allorigins.win/raw?url=",
-    "https://cors-anywhere.herokuapp.com/"
-];
-
-function reproduzirComProxy(ch, proxyIndex=0) {
-    if(proxyIndex >= PROXIES.length) {
-        setOverlay('error', `Canal indisponível: "${ch.name}"`);
-        return;
-    }
-    const proxiedUrl = PROXIES[proxyIndex] + encodeURIComponent(ch.url);
-    if(hls) { hls.destroy(); hls=null; }
-
-    if(Hls.isSupported()) {
-        hls = new Hls({ maxBufferLength:30, manifestLoadingTimeOut:10000 });
-        hls.loadSource(proxiedUrl);
-        hls.attachMedia(vjsPlayer.tech().el());
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{
-            vjsPlayer.play().then(()=>setOverlay('hidden')).catch(()=>setOverlay('hidden'));
-        });
-        hls.on(Hls.Events.ERROR, (e,data)=>{
-            if(data.fatal) { hls.destroy(); hls=null; reproduzirComProxy(ch, proxyIndex+1); }
-        });
-    } else {
-        vjsPlayer.src({ src: proxiedUrl, type: 'application/x-mpegURL' });
-        vjsPlayer.play().then(()=>setOverlay('hidden')).catch(()=>reproduzirComProxy(ch, proxyIndex+1));
-    }
-}
-
-function reproduzirComProxyNativo(ch) {
-    const proxiedUrl = CORS_PROXY + encodeURIComponent(ch.url);
-    vjsPlayer.src({ src: proxiedUrl, type: 'application/x-mpegURL' });
-    vjsPlayer.play().then(()=>setOverlay('hidden')).catch(()=>setOverlay('error', `Canal indisponível: "${ch.name}"`));
-}
-
-function setOverlay(state, msg='') {
-    const ov = document.getElementById('videoOverlay');
-    if(state==='hidden') { ov.style.display='none'; return; }
-    ov.style.display='flex';
-    ov.style.pointerEvents = state==='error' ? 'auto' : 'none';
-    if(state==='loading') {
-        ov.innerHTML='<div class="spinner"></div><div class="overlay-msg">Carregando stream...</div>';
-    } else if(state==='error') {
-        ov.innerHTML=`<div class="overlay-msg">⚠️ <b>${msg||'Erro ao reproduzir'}</b><br><small style="opacity:.6;margin-top:6px;display:block">Tente outro canal ou verifique a lista</small></div>`;
-    }
-}
-
-// ─── TESTE GRÁTIS ────────────────────────────────────
-function iniciarTeste() {
-    const cod = "TESTE"+Math.floor(1000+Math.random()*9000);
-    database.ref('clientes/'+cod).set({ nome:"Usuário Teste", plano:"TESTE GRÁTIS", criadoEm:new Date().toISOString(), vencimento:new Date(Date.now()+4*3600000).toISOString(), status:'Ativo' })
+// ── TESTE GRÁTIS ──────────────────────────────────────────
+function iniciarTeste(){
+    const cod="TESTE"+Math.floor(1000+Math.random()*9000);
+    database.ref('clientes/'+cod).set({nome:"Usuário Teste",plano:"TESTE GRÁTIS",criadoEm:new Date().toISOString(),vencimento:new Date(Date.now()+4*3600000).toISOString(),status:'Ativo'})
     .then(()=>{ alert("SEU CÓDIGO: "+cod); document.getElementById('loginInput').value=cod; logar(); });
 }
 
-// ─── ADM ──────────────────────────────────────────────
-function abrirAdm() {
+// ── ADM ───────────────────────────────────────────────────
+function abrirAdm(){
     if(prompt("Senha:")!=="97035855") return;
     document.getElementById('salesScreen').style.display='none';
     document.getElementById('admPanel').style.display='flex';
     carregarTabela();
 }
 
-function carregarTabela() {
-    database.ref('clientes').on('value', snap=>{
+function carregarTabela(){
+    database.ref('clientes').on('value',snap=>{
         const tbody=document.getElementById('admTableBody'); tbody.innerHTML='';
         snap.forEach(child=>{
             const c=child.val();
             tbody.innerHTML+=`<tr>
-                <td>${c.nome||'—'}</td>
-                <td><b>${child.key}</b></td>
-                <td style="color:var(--accent);font-weight:700;">${c.plano||'TESTE'}</td>
+                <td>${c.nome||'—'}</td><td><b>${child.key}</b></td>
+                <td style="color:var(--accent);font-weight:700">${c.plano||'TESTE'}</td>
                 <td>${c.criadoEm?new Date(c.criadoEm).toLocaleDateString('pt-BR'):'--'}</td>
                 <td>${new Date(c.vencimento).toLocaleDateString('pt-BR')}</td>
                 <td style="color:${c.status==='Bloqueado'?'var(--red)':(c.status==='Pendente'?'var(--orange)':'var(--green)')}">${c.status||'Ativo'}</td>
                 <td>
-                    <button class="btn-adm" style="background:#10b981;" onclick="addT('${child.key}','d')">+ DIAS</button>
-                    <button class="btn-adm" style="background:#059669;" onclick="addT('${child.key}','m')">+ MÊS</button>
-                    <button class="btn-adm" style="background:var(--orange);" onclick="toggleS('${child.key}','${c.status}')">BLOQ</button>
-                    <button class="btn-adm" style="background:var(--red);" onclick="remover('${child.key}')">EXCLUIR</button>
-                </td>
-            </tr>`;
+                    <button class="btn-adm" style="background:#10b981" onclick="addT('${child.key}','d')">+ DIAS</button>
+                    <button class="btn-adm" style="background:#059669" onclick="addT('${child.key}','m')">+ MÊS</button>
+                    <button class="btn-adm" style="background:var(--orange)" onclick="toggleS('${child.key}','${c.status}')">BLOQ</button>
+                    <button class="btn-adm" style="background:var(--red)" onclick="remover('${child.key}')">EXCLUIR</button>
+                </td></tr>`;
         });
     });
 }
 
-function addT(id,t) {
+function addT(id,t){
     const q=parseInt(prompt("Quantidade?"));
     if(!q) return;
     database.ref('clientes/'+id).once('value').then(s=>{
@@ -865,8 +1229,8 @@ function addT(id,t) {
     });
 }
 
-function toggleS(id,s) { database.ref('clientes/'+id).update({status:s==='Bloqueado'?'Ativo':'Bloqueado'}); }
-function remover(id) { if(confirm("Remover cliente?")) database.ref('clientes/'+id).remove(); }
+function toggleS(id,s){ database.ref('clientes/'+id).update({status:s==='Bloqueado'?'Ativo':'Bloqueado'}); }
+function remover(id){ if(confirm("Remover cliente?")) database.ref('clientes/'+id).remove(); }
 </script>
 </body>
 </html>
