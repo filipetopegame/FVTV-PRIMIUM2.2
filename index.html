@@ -739,10 +739,11 @@
 
             <!-- COLUNA ESQUERDA: categorias + lista -->
             <div id="fp-sidebar" style="display:flex;flex-direction:column;width:450px;min-width:0;flex-shrink:0;border-right:1px solid #222;background:#0d0d0d;overflow:hidden">
-                <!-- Abas VOD / LIVE -->
+                <!-- Abas VOD / LIVE / SÉRIES -->
                 <div style="display:flex;background:#000;border-bottom:1px solid #222;flex-shrink:0">
-                    <div id="fp-tab-vod"  onclick="fpMudarAba('VOD')"  style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#00ff00;min-height:40px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">🎬 VODS</div>
-                    <div id="fp-tab-live" onclick="fpMudarAba('LIVE')" style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#555;min-height:40px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">📺 CANAIS</div>
+                    <div id="fp-tab-vod"    onclick="fpMudarAba('VOD')"    style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#00ff00;border-bottom:2px solid #00ff00;min-height:40px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">🎬 VODS</div>
+                    <div id="fp-tab-live"   onclick="fpMudarAba('LIVE')"   style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#555;border-bottom:2px solid transparent;min-height:40px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">📺 CANAIS</div>
+                    <div id="fp-tab-series" onclick="fpMudarAba('SERIES')" style="flex:1;padding:10px 4px;text-align:center;cursor:pointer;font-size:0.65rem;font-weight:700;color:#555;border-bottom:2px solid transparent;min-height:40px;display:flex;align-items:center;justify-content:center;touch-action:manipulation">🎭 SÉRIES</div>
                 </div>
 
                 <!-- Categorias (scroll horizontal no mobile) -->
@@ -753,15 +754,41 @@
                 </div>
 
                 <!-- Busca -->
-                <div style="padding:8px;flex-shrink:0;background:#0d0d0d">
+                <div id="fp-search-box" style="padding:8px;flex-shrink:0;background:#0d0d0d">
                     <input id="fp-search" type="text" placeholder="🔍 Buscar..."
                            oninput="fpFiltrar(this.value)"
                            style="width:100%;padding:9px;border-radius:6px;border:1px solid #333;background:#1a1a1a;color:#fff;outline:none;font-size:12px;box-sizing:border-box;-webkit-appearance:none"
                            autocomplete="off" autocorrect="off" spellcheck="false" inputmode="search">
                 </div>
 
-                <!-- Lista de conteúdo -->
+                <!-- Lista de conteúdo VOD/LIVE -->
                 <div id="fp-items" style="flex:1;overflow-y:auto;padding:4px 6px;-webkit-overflow-scrolling:touch"></div>
+
+                <!-- Grid de SÉRIES com capas -->
+                <div id="fp-series-panel" style="display:none;flex:1;overflow-y:scroll;overflow-x:hidden;padding:10px;-webkit-overflow-scrolling:touch;background:#0a0a0a;height:100%">
+                    <div id="fp-series-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding-bottom:20px"></div>
+                </div>
+            </div>
+
+            <!-- Detalhe da série cobre toda a area do layout -->
+            <div id="fp-serie-detail" style="display:none;position:absolute;inset:0;z-index:30;background:#0a0a0a;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;flex-direction:column">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#000;border-bottom:1px solid #1a1a1a;flex-shrink:0;position:sticky;top:0;z-index:5">
+                    <button onclick="fpFecharDetalhe()" style="background:#1a1a1a;border:1px solid #00ff00;color:#00ff00;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:1px;min-height:38px;touch-action:manipulation">&#8592; VOLTAR</button>
+                    <span id="fp-sd-toptitle" style="color:#aaa;font-size:11px;font-weight:700;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+                </div>
+                <div style="position:relative;flex-shrink:0">
+                    <img id="fp-sd-banner" src="" style="width:100%;max-height:200px;object-fit:cover;opacity:.5;display:block">
+                    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,#0a0a0a 100%)"></div>
+                </div>
+                <div style="padding:0 16px 16px;margin-top:-50px;position:relative;z-index:2;display:flex;gap:14px;align-items:flex-start;flex-shrink:0">
+                    <img id="fp-sd-poster" src="" style="width:90px;height:134px;object-fit:cover;border-radius:8px;border:2px solid #00ff00;flex-shrink:0;box-shadow:0 4px 24px rgba(0,255,0,.25)">
+                    <div style="padding-top:30px;min-width:0">
+                        <div id="fp-sd-title" style="font-family:Rajdhani,sans-serif;font-size:1.3rem;font-weight:700;color:#fff;letter-spacing:2px"></div>
+                        <div id="fp-sd-meta"  style="font-size:0.7rem;color:#00ff00;margin-top:4px;letter-spacing:1px"></div>
+                        <div id="fp-sd-desc"  style="font-size:0.72rem;color:#888;margin-top:8px;line-height:1.5"></div>
+                    </div>
+                </div>
+                <div id="fp-sd-seasons" style="padding:0 16px 40px;flex-shrink:0"></div>
             </div>
 
             <!-- PLAYER -->
@@ -837,7 +864,7 @@
 // ── CONFIGURAÇÕES ────────────────────────────────────────────────
 const LISTAS = {
     1: { nome:"Lista 1 — VF",    url:"https://abre.ai/br03comcapas-vf" },
-    2: { nome:"Lista 2 — 2026",  url:"https://abre.ai/671-br01" },
+    2: { nome:"Lista 2 — 2026",  url:"https://raw.githubusercontent.com/filipetopegame/topevftv/refs/heads/main/671%20BR01%20CANAIS.m3u8?token=GHSAT0AAAAAADZQ34BP3SV3LD3WZYZME7QU2PQP5MA" },
     3: { nome:"Lista 3 — Extra", url:"https://raw.githubusercontent.com/Ramys/Iptv-Brasil-2026/refs/heads/master/CanaisBR01.m3u8" }
 };
 const LISTA4_URL = "http://webtv.iptvsmarters.com/switchuser.php";
@@ -1010,8 +1037,9 @@ try {
 }
 var fpCarregou = false;
 var FP_URLS = [
+    "https://raw.githubusercontent.com/filipetopegame/lista.json/refs/heads/main/93%20CN%20OK.json",
     "https://raw.githubusercontent.com/filipetopegame/lista.json/main/lista_parte_1.json",
-    "https://raw.githubusercontent.com/filipetopegame/lista.json/main/lista_parte_2.json"
+    "https://raw.githubusercontent.com/filipetopegame/lista.json/main/lista_parte_2.json",
 ];
 var FP_TMDB = "15d2ea6d0dc1d246f31f0a73730b214f";
 var fpVideoEl = null;
@@ -1261,14 +1289,125 @@ function fpSelecionarCat(cat, el) {
     fpRenderizar(document.getElementById('fp-search').value);
 }
 
+/* ══ BANCO DE SÉRIES ══ */
+var FP_SERIES_DB = [
+    {
+        id: 'impuros',
+        titulo: 'Impuros',
+        ano: '2018 – atual',
+        genero: 'Drama · Crime',
+        descricao: 'No Rio de Janeiro dos anos 90, Evandro sonha em se tornar um grande empresário, mas acaba entrando para o crime e construindo um império. Sua habilidade chama a atenção de Morello, um detetive federal com comportamento autodestrutivo.',
+        poster: 'https://pics.filmaffinity.com/impuros-870944395-large.jpg',
+        banner: 'https://pics.filmaffinity.com/impuros-870944395-large.jpg',
+        temporadas: [
+            { num: 1, nome: 'Temporada 1', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-1/1' },
+            { num: 2, nome: 'Temporada 2', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-2/1' },
+            { num: 3, nome: 'Temporada 3', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-3/1' },
+            { num: 4, nome: 'Temporada 4', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-4/1' },
+            { num: 5, nome: 'Temporada 5', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-5/1' },
+            { num: 6, nome: 'Temporada 6', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-6/1' }
+        ]
+    },
+    {
+        id: 'theboys',
+        titulo: 'The Boys',
+        ano: '2019 – atual',
+        genero: 'Ação · Sci-Fi · Sátira',
+        descricao: 'Um grupo de vigilantes chamado "The Boys" tenta derrubar super-heróis corruptos usando nada além de garra e disposição para sujar as mãos.',
+        poster: 'https://image.tmdb.org/t/p/w300/mY7SeH4HFFxW1hiI6cWuwCRKptN.jpg',
+        banner: 'https://image.tmdb.org/t/p/w780/6UH9HMOFRFhCBGCMRGn4eIKqYxB.jpg',
+        temporadas: [
+            { num: 1, nome: 'Temporada 1', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-1' },
+            { num: 2, nome: 'Temporada 2', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-2' },
+            { num: 3, nome: 'Temporada 3', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-3' },
+            { num: 4, nome: 'Temporada 4', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-4[Audio-pt-BR]' }
+        ]
+    }
+    /* Adicione mais séries aqui no mesmo formato */
+];
+
+function fpRenderizarSeries() {
+    var grid = document.getElementById('fp-series-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    FP_SERIES_DB.forEach(function(serie) {
+        var card = document.createElement('div');
+        card.style.cssText = 'cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color .2s,transform .15s;touch-action:manipulation;position:relative;background:#111';
+        card.innerHTML =
+            '<img src="' + serie.poster + '" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block" loading="lazy" onerror="this.style.opacity=\'.3\'">' +
+            '<div style="position:absolute;bottom:0;left:0;right:0;padding:6px 5px;background:linear-gradient(transparent,rgba(0,0,0,.92));font-size:0.62rem;color:#fff;font-weight:700;letter-spacing:.4px;text-align:center;line-height:1.3">' + serie.titulo + '</div>' +
+            '<div style="position:absolute;top:5px;right:5px;background:#00ff00;color:#000;font-size:0.52rem;font-weight:800;padding:2px 6px;border-radius:10px">T' + serie.temporadas.length + '</div>';
+        card.addEventListener('mouseenter', function() { card.style.borderColor='#00ff00'; card.style.transform='scale(1.04)'; });
+        card.addEventListener('mouseleave', function() { card.style.borderColor='transparent'; card.style.transform=''; });
+        card.addEventListener('click', function() { fpAbrirDetalhe(serie); });
+        grid.appendChild(card);
+    });
+}
+
+function fpAbrirDetalhe(serie) {
+    document.getElementById('fp-sd-title').textContent = serie.titulo;
+    document.getElementById('fp-sd-toptitle').textContent = serie.titulo;
+    document.getElementById('fp-sd-meta').textContent  = serie.ano + ' · ' + serie.genero;
+    document.getElementById('fp-sd-desc').textContent  = serie.descricao;
+    document.getElementById('fp-sd-poster').src = serie.poster;
+    document.getElementById('fp-sd-banner').src = serie.banner || serie.poster;
+
+    var seasonsEl = document.getElementById('fp-sd-seasons');
+    seasonsEl.innerHTML = '<div style="font-size:0.7rem;letter-spacing:2px;color:#00ff00;font-weight:700;margin-bottom:12px;text-transform:uppercase">Temporadas</div>';
+    serie.temporadas.forEach(function(t) {
+        var btn = document.createElement('a');
+        btn.href   = t.link;
+        btn.target = '_blank';
+        btn.rel    = 'noopener noreferrer';
+        btn.style.cssText = 'display:flex;align-items:center;gap:12px;padding:13px 14px;background:#111;border:1px solid #222;border-radius:10px;margin-bottom:8px;text-decoration:none;color:#fff;font-size:0.8rem;font-weight:700;letter-spacing:1px;transition:background .15s,border-color .15s;touch-action:manipulation;cursor:pointer';
+        btn.innerHTML =
+            '<span style="width:32px;height:32px;background:#00ff00;color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">' + t.num + '</span>' +
+            '<span>' + t.nome + '</span>' +
+            '<span style="margin-left:auto;font-size:1rem;opacity:.5">↗</span>';
+        btn.addEventListener('mouseenter', function() { btn.style.background='#1a2a1a'; btn.style.borderColor='#00ff00'; });
+        btn.addEventListener('mouseleave', function() { btn.style.background='#111'; btn.style.borderColor='#222'; });
+        seasonsEl.appendChild(btn);
+    });
+
+    var det = document.getElementById('fp-serie-detail');
+    det.style.display = 'flex';
+    det.scrollTop = 0;
+}
+
+function fpFecharDetalhe() {
+    document.getElementById('fp-serie-detail').style.display = 'none';
+}
+
 function fpMudarAba(tipo) {
     fpAba = tipo; fpCat = 'TUDO';
-    var tabVod  = document.getElementById('fp-tab-vod');
-    var tabLive = document.getElementById('fp-tab-live');
-    if (tabVod)  { tabVod.style.color  = tipo === 'VOD'  ? '#00ff00' : '#555'; tabVod.style.borderBottom  = tipo === 'VOD'  ? '2px solid #00ff00' : '2px solid transparent'; }
-    if (tabLive) { tabLive.style.color = tipo === 'LIVE' ? '#ff4444' : '#555'; tabLive.style.borderBottom = tipo === 'LIVE' ? '2px solid #ff4444' : '2px solid transparent'; }
-    fpGerarCats();
-    fpRenderizar();
+    var tabVod    = document.getElementById('fp-tab-vod');
+    var tabLive   = document.getElementById('fp-tab-live');
+    var tabSeries = document.getElementById('fp-tab-series');
+    var isSeries  = tipo === 'SERIES';
+
+    if (tabVod)    { tabVod.style.color    = tipo==='VOD'    ? '#00ff00' : '#555'; tabVod.style.borderBottom    = tipo==='VOD'    ? '2px solid #00ff00' : '2px solid transparent'; }
+    if (tabLive)   { tabLive.style.color   = tipo==='LIVE'   ? '#ff4444' : '#555'; tabLive.style.borderBottom   = tipo==='LIVE'   ? '2px solid #ff4444' : '2px solid transparent'; }
+    if (tabSeries) { tabSeries.style.color = isSeries        ? '#a855f7' : '#555'; tabSeries.style.borderBottom = isSeries        ? '2px solid #a855f7' : '2px solid transparent'; }
+
+    var fpItems     = document.getElementById('fp-items');
+    var fpSerPanel  = document.getElementById('fp-series-panel');
+    var fpCats      = document.getElementById('fp-cats');
+    var fpSrchBox   = document.getElementById('fp-search-box');
+
+    if (isSeries) {
+        if (fpItems)    fpItems.style.display    = 'none';
+        if (fpCats)     fpCats.style.display     = 'none';
+        if (fpSrchBox)  fpSrchBox.style.display  = 'none';
+        if (fpSerPanel) fpSerPanel.style.display  = 'block';
+        fpRenderizarSeries();
+    } else {
+        if (fpItems)    fpItems.style.display    = 'block';
+        if (fpCats)     fpCats.style.display     = 'flex';
+        if (fpSrchBox)  fpSrchBox.style.display  = 'block';
+        if (fpSerPanel) fpSerPanel.style.display  = 'none';
+        fpGerarCats();
+        fpRenderizar();
+    }
 }
 
 function fpGerarCats() {
