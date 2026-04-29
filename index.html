@@ -1292,63 +1292,150 @@ function fpSelecionarCat(cat, el) {
 /* ══ BANCO DE SÉRIES ══ */
 var FP_SERIES_DB = [
     {
-        id: 'impuros',
-        titulo: 'Impuros',
-        ano: '2018 – atual',
-        genero: 'Drama · Crime',
-        descricao: 'No Rio de Janeiro dos anos 90, Evandro sonha em se tornar um grande empresário, mas acaba entrando para o crime e construindo um império. Sua habilidade chama a atenção de Morello, um detetive federal com comportamento autodestrutivo.',
-        poster: 'https://pics.filmaffinity.com/impuros-870944395-large.jpg',
-        banner: 'https://pics.filmaffinity.com/impuros-870944395-large.jpg',
-        temporadas: [
-            { num: 1, nome: 'Temporada 1', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-1/1' },
-            { num: 2, nome: 'Temporada 2', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-2/1' },
-            { num: 3, nome: 'Temporada 3', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-3/1' },
-            { num: 4, nome: 'Temporada 4', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-4/1' },
-            { num: 5, nome: 'Temporada 5', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-5/1' },
-            { num: 6, nome: 'Temporada 6', link: 'https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-6/1' }
+        "id": "impuros",
+        "titulo": "Impuros",
+        "ano": "2018 – atual",
+        "genero": "Drama · Crime",
+        "descricao": "No Rio de Janeiro dos anos 90, Evandro entra para o crime e constrói um império.",
+        "poster": "https://pics.filmaffinity.com/impuros-870944395-large.jpg",
+        "banner": "https://pics.filmaffinity.com/impuros-870944395-large.jpg",
+        "temporadas": [
+            {
+                "num": 1,
+                "nome": "Temporada 1",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-1/1"
+            },
+            {
+                "num": 2,
+                "nome": "Temporada 2",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-2/1"
+            },
+            {
+                "num": 3,
+                "nome": "Temporada 3",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-3/1"
+            },
+            {
+                "num": 4,
+                "nome": "Temporada 4",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-4/1"
+            },
+            {
+                "num": 5,
+                "nome": "Temporada 5",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-5/1"
+            },
+            {
+                "num": 6,
+                "nome": "Temporada 6",
+                "link": "https://peliculaplay.com/pt/detail/drama/ojPtKwAqemQsck3TsYKYe-Impure-Season-6/1"
+            }
         ]
     },
     {
-        id: 'theboys',
-        titulo: 'The Boys',
-        ano: '2019 – atual',
-        genero: 'Ação · Sci-Fi · Sátira',
-        descricao: 'Um grupo de vigilantes chamado "The Boys" tenta derrubar super-heróis corruptos usando nada além de garra e disposição para sujar as mãos.',
-        poster: 'https://image.tmdb.org/t/p/w300/mY7SeH4HFFxW1hiI6cWuwCRKptN.jpg',
-        banner: 'https://image.tmdb.org/t/p/w780/6UH9HMOFRFhCBGCMRGn4eIKqYxB.jpg',
-        temporadas: [
-            { num: 1, nome: 'Temporada 1', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-1' },
-            { num: 2, nome: 'Temporada 2', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-2' },
-            { num: 3, nome: 'Temporada 3', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-3' },
-            { num: 4, nome: 'Temporada 4', link: 'https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-4[Audio-pt-BR]' }
-        ]
-    }
-    ,
-    {
-        id: 'arcanjo-renegado',
-        titulo: 'Arcanjo Renegado',
-        ano: '2020 – atual',
-        genero: 'Ação · Thriller · Crime',
-        descricao: 'Baseado em fatos reais, a série acompanha um agente infiltrado da polícia que mergulha fundo no mundo do crime organizado para desmantelar uma das maiores facções criminosas do Brasil.',
-        poster: 'https://m.media-amazon.com/images/M/MV5BNThlMzNiMGItNWI5OS00YWZjLWI3MDYtN2YzNTlhODJlMTlhXkEyXkFqcGdeQXVyMTEzMTI1Mjk3._V1_.jpg',
-        banner: 'https://m.media-amazon.com/images/M/MV5BNThlMzNiMGItNWI5OS00YWZjLWI3MDYtN2YzNTlhODJlMTlhXkEyXkFqcGdeQXVyMTEzMTI1Mjk3._V1_.jpg',
-        temporadas: [
-            { num: 1, nome: 'Temporada 1', link: 'https://peliculaplay.com/pt/detail/drama/KoJuJPguzAVjGDfsY5wXL-Arcanjo-Renegado-Season-1' }
+        "id": "theboys",
+        "titulo": "The Boys",
+        "ano": "2019 – atual",
+        "genero": "Ação · Sci-Fi · Sátira",
+        "descricao": "Um grupo de vigilantes tenta derrubar super-heróis corruptos.",
+        "poster": "https://image.tmdb.org/t/p/w300/mY7SeH4HFFxW1hiI6cWuwCRKptN.jpg",
+        "banner": "https://image.tmdb.org/t/p/w780/6UH9HMOFRFhCBGCMRGn4eIKqYxB.jpg",
+        "temporadas": [
+            {
+                "num": 1,
+                "nome": "Temporada 1",
+                "link": "https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-1"
+            },
+            {
+                "num": 2,
+                "nome": "Temporada 2",
+                "link": "https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-2"
+            },
+            {
+                "num": 3,
+                "nome": "Temporada 3",
+                "link": "https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-3"
+            },
+            {
+                "num": 4,
+                "nome": "Temporada 4",
+                "link": "https://www3.dramasfree.com/pt/detail/drama/zPVnYYjaVVIvCauZCYipc-The-Boys-Season-4[Audio-pt-BR]"
+            }
         ]
     },
     {
-        id: 'jujutsu-kaisen',
-        titulo: 'Jujutsu Kaisen',
-        ano: '2020 – atual',
-        genero: 'Animação · Ação · Fantasia',
-        descricao: 'Yuji Itadori é um estudante do ensino médio que, após engolir um dedo amaldiçoado de um poderoso demônio, passa a hospedar Ryomen Sukuna dentro de si e entra no mundo dos feiticeiros de jujutsu.',
-        poster: 'https://m.media-amazon.com/images/M/MV5BYWQ4ZTRiMjQtMDZmMS00ZmQzLWE3MGMtNTc2OTkwMWVlNWNkXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg',
-        banner: 'https://m.media-amazon.com/images/M/MV5BYWQ4ZTRiMjQtMDZmMS00ZmQzLWE3MGMtNTc2OTkwMWVlNWNkXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg',
-        temporadas: [
-            { num: 1, nome: 'Temporada 1', link: 'https://peliculaplay.com/pt/detail/drama/eOGRXacathx6akGiXY51c-Jujutsu-Kaisen' }
+        "id": "arcanjo-renegado",
+        "titulo": "Arcanjo Renegado",
+        "ano": "2020 – atual",
+        "genero": "Ação · Thriller · Crime",
+        "descricao": "Baseado em fatos reais, agente infiltrado desmantelando facção criminosa.",
+        "poster": "https://img.peliculaplay.com/cover/20250827/1756267152591_ba393d1d56ee07529d0a395a03706707Arcanjo%20Renegado1.webp?imageMogr2/format/webp",
+        "banner": "https://img.peliculaplay.com/cover/20250827/1756267152591_ba393d1d56ee07529d0a395a03706707Arcanjo%20Renegado1.webp?imageMogr2/format/webp",
+        "temporadas": [
+            {
+                "num": 1,
+                "nome": "Temporada 1",
+                "link": "https://peliculaplay.com/pt/detail/drama/KoJuJPguzAVjGDfsY5wXL-Arcanjo-Renegado-Season-1"
+            }
+        ]
+    },
+    {
+        "id": "jujutsu-kaisen",
+        "titulo": "Jujutsu Kaisen",
+        "ano": "2020 – atual",
+        "genero": "Animação · Ação · Fantasia",
+        "descricao": "Yuji Itadori engole um dedo amaldiçoado e entra no mundo dos feiticeiros.",
+        "poster": "https://img.peliculaplay.com/cover/20250422/1745306295163_e9cf9e31c73f66bc415d80c560326243%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98.jpg",
+        "banner": "https://img.peliculaplay.com/cover/20250422/1745306295163_e9cf9e31c73f66bc415d80c560326243%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98.jpg",
+        "temporadas": [
+            {
+                "num": 1,
+                "nome": "Temporada 1",
+                "link": "https://peliculaplay.com/pt/detail/drama/eOGRXacathx6akGiXY51c-Jujutsu-Kaisen"
+            },
+            {
+                "num": 2,
+                "nome": "Temporada 2",
+                "link": "https://peliculaplay.com/pt/detail/drama/GQFNYHdX6ju2mylp1qx2X-Jujutsu-Kaisen-Season-2"
+            },
+            {
+                "num": 3,
+                "nome": "Temporada 3",
+                "link": "https://peliculaplay.com/pt/detail/drama/FckkRGH2W9FRNADn7apBo-Jujutsu-Kaisen-Season-3"
+            }
+        ]
+    },
+    {
+        "id": "the-rookie",
+        "titulo": "The Rookie",
+        "ano": "2026",
+        "genero": "Crime · Comedia · Drama",
+        "descricao": "Começar por encima no es fácil, especialmente para John Nolan, quien, depois de um incidente que altera la vida, está perseguindo seu sueño de unirse a la LAPD. Como seu novato mais antigo, se reunió com o ceticismo daqueles que vieram como uma crise da mediana idade que caminha",
+        "poster": "https://img.playspelis.com/cover/20250905/1757035875906_6d4e00a5062b942cccae139136f4acc31631869724332_618da84eaef5db2073a34816dd111158eh5fbHwK8GgBuib8vG8Ntok7ZAR.jpg",
+        "banner": "https://img.playspelis.com/cover/20250905/1757035875906_6d4e00a5062b942cccae139136f4acc31631869724332_618da84eaef5db2073a34816dd111158eh5fbHwK8GgBuib8vG8Ntok7ZAR.jpg",
+        "temporadas": [
+            {
+                "num": 1,
+                "nome": "TEMPORADA 1",
+                "link": "https://video.playspelis.com/pt/detail/drama/P3tkBz3OuEVXzFV4dOsL3-The-Rookie-Season-1"
+            },
+            {
+                "num": 2,
+                "nome": "TEMPORADA 2",
+                "link": "https://video.playspelis.com/pt/detail/drama/DTaZopce5HGI148MxVG1r-The-Rookie-Season-2"
+            },
+            {
+                "num": 3,
+                "nome": "TEMPORADA 3",
+                "link": "https://video.playspelis.com/pt/detail/drama/OHGwoUrhR4PeX9sIXBHRu-The-Rookie-Season-3"
+            },
+            {
+                "num": 4,
+                "nome": "TEMPORADA 4",
+                "link": "https://video.playspelis.com/pt/detail/drama/vy9pGEntRxk7lS9PdJ0NH-The-Rookie-Season-4"
+            }
         ]
     }
-    /* Adicione mais séries aqui no mesmo formato */
 ];
 
 function fpRenderizarSeries() {
