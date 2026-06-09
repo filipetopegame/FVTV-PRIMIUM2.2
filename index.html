@@ -438,12 +438,62 @@
     .step-screen { display: none; }
     .step-screen.active { display: block; }
 
-    @media (max-width: 480px) {
-      nav { padding: 12px 16px; }
-      .action-cards { gap: 12px; }
-      .action-card { width: 160px; padding: 24px 20px; }
-      .action-card h3 { font-size: 15px; }
-      .step-card { padding: 20px 16px; }
+    /* ===================== MOBILE ===================== */
+    @media (max-width: 600px) {
+      nav { padding: 10px 12px; gap: 8px; }
+      .nav-btn { font-size: 12px; padding: 8px 12px; gap: 6px; }
+      .nav-btn svg { width: 14px; height: 14px; }
+
+      .hero-banner { min-height: 55vw; }
+      .action-cards { gap: 10px; padding: 0 12px; margin-top: -28px; }
+      .action-card { width: calc(50% - 5px); padding: 20px 14px; border-radius: 10px; }
+      .action-card h3 { font-size: 14px; }
+      .action-card p { font-size: 12px; }
+      .action-card-icon { width: 36px; height: 36px; margin-bottom: 10px; }
+
+      .container { padding: 14px 12px 40px; }
+      .container h1 { font-size: 22px; }
+      .subtitle { font-size: 13px; margin-bottom: 20px; }
+      .step-card { padding: 18px 14px; margin-bottom: 14px; }
+      .step-card h2 { font-size: 17px; margin-bottom: 16px; }
+
+      .custom-select { font-size: 14px; padding: 12px 14px; }
+      .dropdown-item { padding: 12px 12px; gap: 10px; }
+      .item-icon { width: 32px; height: 32px; font-size: 16px; }
+      .item-info .item-name { font-size: 14px; }
+      .item-info .item-sub { font-size: 11px; }
+
+      .btn-row { gap: 8px; }
+      .btn-back { font-size: 13px; padding: 13px 14px; }
+      .btn-next { font-size: 13px; padding: 13px 14px; }
+      .btn-help { font-size: 13px; padding: 13px 18px; }
+
+      .result-header { padding: 12px 14px; gap: 10px; }
+      .result-app-name { font-size: 16px; }
+      .info-box { padding: 14px; }
+      .info-field-value { font-size: 17px; }
+      .info-field-value.small { font-size: 13px; }
+
+      .tutorial-steps-list { padding: 0 14px 16px; }
+      .t-step-text { font-size: 13px; }
+      .tutorial-box-title { font-size: 14px; padding: 12px 14px; }
+
+      .mock-nav { width: 80px; }
+      .mock-nav-item { font-size: 10px; padding: 8px 10px; }
+      .mock-content { padding: 10px; }
+      .mock-logo { font-size: 13px; }
+      .mock-input { font-size: 11px; padding: 6px 8px; }
+      .mock-go-btn { font-size: 11px; padding: 6px 10px; }
+
+      .video-tabs { flex-wrap: wrap; }
+      .video-tab { flex: none; width: 100%; font-size: 12px; padding: 10px 6px; border-radius: 0 !important; }
+      .video-tabs .video-tab:first-child { border-radius: 8px 8px 0 0 !important; }
+      .video-wrapper { border-radius: 0 0 8px 8px; }
+    }
+
+    @media (max-width: 360px) {
+      .action-card { padding: 16px 10px; }
+      .action-card h3 { font-size: 13px; }
     }
   </style>
 </head>
